@@ -2,10 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/art/Moon.png" />
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.png') }}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <meta name="author" content="Hungry Monkey"/>
+    <meta name="description" content="Play a fun game of trivia with your friends!"/>
+    <meta property="og:image" content="{{ url_for('static', filename='art/cloud1.png') }}"/>
+    <meta property="og:description" content="Play a fun game of trivia with your friends!"/>
+    <meta property="og:title" content="Domain - Trivia With Friends"/>
     <title>Domain - Trivia With Friends</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
@@ -37,6 +40,17 @@
 
       <form action="/create" method="post">
         <h2>Create Your Game</h2>
+        <div class="input-wrapper">
+          <label for="username">Your Username</label>
+          <input
+            class="neobrutalist"
+            id="username"
+            type="text"
+            name="username"
+            placeholder="enter your username"
+            required
+          />
+        </div>
         <div class="input-wrapper">
           <label for="questions">Number of Questions</label>
           <input

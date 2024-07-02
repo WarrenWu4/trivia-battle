@@ -1,15 +1,15 @@
 from flask import Flask, redirect, render_template, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
+import uuid
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '123'
 socketio = SocketIO(app)
 
 connections = {}
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return redirect('/create')
 
 @app.route('/create', methods=['GET', 'POST'])
 def create():
@@ -18,13 +18,17 @@ def create():
         timer = request.form.get('timer')
         categories = request.form.get('categories')
         print(f'creating game with {questions} questions and {timer} timer and {categories} categories')
-        return redirect('/game/123')
+        return redirect(f"/waiting_room/{uuid.uuid4()}")
     else:
         return render_template('create.html')
 
 @app.route('/about')
 def about():
     return render_template('about.html')
+
+@app.route('/waiting_room/<room_id>')
+def waiting_room(room_id):
+    return render_template('waiting_room.html', room_id=room_id)
 
 @app.route('/game/<game_id>')
 def game(game_id):

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.png') }}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="description" content="Play a fun game of trivia with your friends!"/>
+    <meta property="og:image" content="{{ url_for('static', filename='art/cloud1.png') }}"/>
+    <meta property="og:description" content="Play a fun game of trivia with your friends!"/>
+    <meta property="og:title" content="Domain - Trivia With Friends"/>
+    <title>Domain - Trivia With Friends</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  </head>
+
+  <body>
+    <div class="container">
+        <nav>
+            <h1>WAITING ROOM</h1>
+            <div class="tools">
+                <a href="/create">
+                <img 
+                    src="{{ url_for('static', filename='icons/Times.svg') }}"
+                    alt="close icon"
+                    width="20"
+                    height="20"
+                />
+                </a>
+            </div>
+        </nav>
+
+        <div class="actions">
+            <a href="/game/{{ room_id }}" class="default-btn">
+                START GAME
+                <img
+                    src="{{ url_for('static', filename='icons/ArrowRight.svg') }}"
+                    alt="arrow left"
+                    width="14"
+                    height="14"
+                />
+            </a>
+            <button type="button" class="icon-btn">
+                <img
+                    src="{{ url_for('static', filename='icons/Share.svg') }}"
+                    alt="share button"
+                    width="24"
+                    height="24"
+                />
+            </button>
+        </div>
+
+        <p id="message">waiting for players (0/2)</p>
+
+        <div class="player-container">
+        </div>
+
+    </div>
+  </body>
+</html>
