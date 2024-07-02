@@ -1,0 +1,59 @@
+/* import fonts */
+@font-face {
+  font-family: "Pixeloid";
+  src: url("../fonts/PixeloidSans.ttf");
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: "Pixeloid";
+  src: url("../fonts/PixeloidSans-Bold.ttf");
+  font-weight: bold;
+}
+
+/* reset styles */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 10px;
+}
+
+body {
+  width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: "Pixeloid", sans-serif;
+  display: grid;
+  place-items: center;
+}
+
+/* custom classes */
+.container {
+  width: min(100%, 425px);
+  padding: 2.4rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  row-gap: 32px;
+}
+
+.neobrutalist {
+  border: solid 4px black;
+  box-shadow: 4px 4px black;
+}
+
+.default-btn {
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+  width: fit-content;
+  padding: 1.2rem 1.6rem;
+  background-color: black;
+  color: white;
+  cursor: pointer;
+  font-family: "Pixeloid", sans-serif;
+  font-size: 1.6rem;
+}

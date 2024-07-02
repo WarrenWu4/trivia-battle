@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/art/Moon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="author" content="Hungry Monkey"/>
+    <meta name="description" content="You've been challenged to a game of trivia! :D"/>
+    <meta property="og:image" content="{{ url_for('static', filename='art/cloud1.png') }}"/>
+    <meta property="og:description" content="You've been challenged to a game of trivia! :D"/>
+    <meta property="og:title" content="Domain"/>
+    <title>Domain</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/game.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      
+      {% if game_started %}
+        hahaha i wanna kms :)
+      {% else %}
+        <nav>
+          <h1>WAITING ROOM</h1>
+          <div class="tools">
+            <a href="/create">
+              <img 
+                src="{{ url_for('static', filename='icons/Times.svg') }}"
+                alt="close icon"
+                width="20"
+                height="20"
+              />
+            </a>
+          </div>
+        </nav>
+
+        <button type="button" class="default-btn">
+          SHARE
+        </button>
+
+        <p id="message">waiting for players (0/2)</p>
+
+        <div class="player-container">
+        </div>
+
+      {% endif %}
+
+      <div id="popup">
+        <div class="popup-content">
+          <div class="input-wrapper">
+            <label>Your Username</label>
+            <input
+              class="neobrutalist"
+              type="text"
+              id="username"
+              required
+            />
+          </div>
+          <button type="button" class="default-btn" id="add-user">
+              JOIN ROOM
+          </button>
+        </div>
+      </div>
+
+    </div>
+    <script type="text/javascript">
+      let room_id = "{{ game_id }}";
+    </script>
+    <script src="{{ url_for('static', filename='scripts/game.js') }}"></script>
+  </body>
+</html>
