@@ -1,16 +1,24 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/art/Moon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% extends base.html %}
 
-    <meta name="author" content="Hungry Monkey"/>
-    <title>Domain - Trivia With Friends</title>
+{% block meta %} 
+<meta name="description" content="Play a fun game of trivia with your friends!"/>
+<meta property="og:image" content="{{ url_for('static', filename='art/cloud1.png') }}"/>
+<meta property="og:description" content="Play a fun game of trivia with your friends!"/>
+<meta property="og:title" content="Domain"/>
+<title>Domain</title>
+{% endblock %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-  </head>
-  <body>
-    about page for domain
-  </body>
-</html>
+{% block styles %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>How To Play</h1>
+        <h2>Create a room</h2>
+        <p></p>
+        <h2>Share your game</h2>
+    </div>
+{% endblock %}

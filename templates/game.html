@@ -1,86 +1,31 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/art/Moon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% extends "base.html" %}
 
-    <meta name="author" content="Hungry Monkey"/>
-    <meta name="description" content="You've been challenged to a game of trivia! :D"/>
-    <meta property="og:image" content="{{ url_for('static', filename='art/cloud1.png') }}"/>
-    <meta property="og:description" content="You've been challenged to a game of trivia! :D"/>
-    <meta property="og:title" content="Domain"/>
-    <title>Domain</title>
+{% block meta %} 
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+{% endblock %}
+
+{% block styles %}
+    {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/game.css') }}">
-  
-  </head>
-  <body>
-    <div class="container">
+{% endblock %}
 
-      <nav>
-        <h1>USERNAME</h1>
-        <div class="tools">
-            <a href="/create">
-            <img 
-                src="{{ url_for('static', filename='icons/Times.svg') }}"
-                alt="close icon"
-                width="20"
-                height="20"
-            />
-            </a>
-        </div>
-      </nav>
+{% block scripts %}
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='scripts/game.js') }}"></script>
+{% endblock %}
 
-      <div class="actions neobrutalist bar">
-        <p>60 sec</p>
-        <p>+1920 pts</p>
-      </div>
-
-      <div class="panel neobrutalist">
-        <h2>ANIMALS</h2>
-        <p class="question">If the following animals were to fight each other, which animal would win?</p>
-        <div class="options">
-          <p class="option">
-            <img 
-              src="{{ url_for('static', filename='icons/Play.svg') }}"
-              alt="play icon"
-              width="16"
-              height="16"
-            />
-            zebra
-          </p>
-          <p class="option">
-            <img 
-              src="{{ url_for('static', filename='icons/Play.svg') }}"
-              alt="play icon"
-              width="16"
-              height="16"
-            />
-            ostrich
-          </p>
-          <p class="option">
-            <img 
-              src="{{ url_for('static', filename='icons/Play.svg') }}"
-              alt="play icon"
-              width="16"
-              height="16"
-            />
-            lion
-          </p>
-          <p class="option">
-            <img 
-              src="{{ url_for('static', filename='icons/Play.svg') }}"
-              alt="play icon"
-              width="16"
-              height="16"
-            />
-            new york rat
-          </p>
-        </div>
-      </div>
-
-    </div>  
-  </body>
-</html>
+{% block content %}
+    <div class="container" id="game-container">
+        {% if game_data.state == 'waiting' %}
+            {% include "waiting_room.html" %}
+        {% else %}
+            {% include "question.html" %}
+        {% endif %}
+    </div>
+    <script>
+        const game_state = "{{ game_data.state }}";
+        const room_id = "{{ game_data.room_id }}";
+        const timer = "{{ game_data.timer }}";
+        const connections = "{{ game_data.active_connections }}";
+    </script>
+{% endblock %}

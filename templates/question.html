@@ -1,0 +1,34 @@
+<nav>
+    <h1>USERNAME</h1>
+    <div class="tools">
+        <a href="/create">
+        <img 
+            src="{{ url_for('static', filename='icons/Times.svg') }}"
+            alt="close icon"
+            width="20"
+            height="20"
+        />
+        </a>
+    </div>
+</nav>
+
+<div class="actions">
+</div>
+
+<div id="panel" class="neobrutalist">
+
+    <p id="question">
+        {{ game_data.questions[game_data.current_question-1].question }}
+    </p>
+
+    <div id="answers">
+        {% for answer in game_data.questions[game_data.current_question-1].answers %}
+            <button type="button" class="answer-btn" id="answer{{ loop.index }}">
+                <img
+                    src="{{ url_for('static', filename='icons/Play.svg') }}"
+                />
+                {{ answer }}
+            </button>
+        {% endfor %}
+    </div>
+</div>
