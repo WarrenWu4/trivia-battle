@@ -23,9 +23,26 @@
         {% endif %}
     </div>
     <script>
-        const game_state = "{{ game_data.state }}";
-        const room_id = "{{ game_data.room_id }}";
-        const timer = "{{ game_data.timer }}";
-        const connections = "{{ game_data.active_connections }}";
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Room ID: {{ game_data.room_id }}');
+            
+            if ('{{ game_data.state }}' == 'waiting') {
+                const socket = io();
+                socket.on('connect', function() {
+                console.log('Connected to server');
+                socket.emit('add_player', { room_id: '{{ game_data.room_id }}' });
+                });
+            } else {
+                const question = document.getElementById('question').textContent;
+                const decodedQuestion = decodeHtml(question);
+                document.getElementById('question').textContent = decodedQuestion;
+            }
+        });
+
+        function decodeHtml(str) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(str, 'text/html');
+            return doc.documentElement.textContent;
+        }
     </script>
 {% endblock %}

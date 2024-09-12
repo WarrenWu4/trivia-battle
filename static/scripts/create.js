@@ -1,5 +1,5 @@
 const categories = document.getElementById('categories');
-categories.value = 'General Knowledge,';
+categories.value = '';
 
 const chips = document.querySelectorAll('.chip');
 chips.forEach(chip => {

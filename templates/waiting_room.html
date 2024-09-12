@@ -13,15 +13,6 @@
 </nav>
 
 <div class="actions">
-    <button type="button" id="start-game" class="default-btn">
-        START GAME
-        <img
-            src="{{ url_for('static', filename='icons/ArrowRight.svg') }}"
-            alt="arrow left"
-            width="14"
-            height="14"
-        />
-    </button>
     <button type="button" class="icon-btn">
         <img
             src="{{ url_for('static', filename='icons/Share.svg') }}"
@@ -33,28 +24,5 @@
 </div>
 
 <p id="message">
-    waiting for players (<span id="num_players">0</span>/2)
+    waiting for players to join...
 </p>
-
-<div class="player-container" id="players">
-    {% for player in game_data.players %}
-        <p class="player">{{player}}</p>
-    {% endfor %}
-</div>
-
-<div id="popup" style="display: none;">
-    <div class="popup-content">
-        <div class="input-wrapper">
-            <label for="username">Your Username</label>
-            <input
-              class="neobrutalist"
-              id="username"
-              type="text"
-              name="username"
-              placeholder="enter your username"
-              required
-            />
-          </div>
-        <button type="button" id="popup-btn" class="default-btn">ENTER</button>
-    </div>
-</div>

@@ -22,7 +22,7 @@
     </p>
 
     <div id="answers">
-        {% for answer in game_data.questions[game_data.current_question-1].answers %}
+        {% for answer in shuffle_questions(game_data.questions[game_data.current_question-1].correct_answer,game_data.questions[game_data.current_question-1].incorrect_answers) %}
             <button type="button" class="answer-btn" id="answer{{ loop.index }}">
                 <img
                     src="{{ url_for('static', filename='icons/Play.svg') }}"

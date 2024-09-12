@@ -1,105 +1,91 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.png') }}" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% extends "base.html" %}
 
-    <meta name="description" content="Play a fun game of trivia with your friends!"/>
-    <meta property="og:image" content="{{ url_for('static', filename='art/cloud1.png') }}"/>
-    <meta property="og:description" content="Play a fun game of trivia with your friends!"/>
-    <meta property="og:title" content="Domain - Trivia With Friends"/>
-    <title>Domain - Trivia With Friends</title>
+{% block meta %} 
+<meta name="description" content="Play a fun game of trivia with your friends!"/>
+<meta property="og:image" content="{{ url_for('static', filename='art/cloud1.png') }}"/>
+<meta property="og:description" content="Play a fun game of trivia with your friends!"/>
+<meta property="og:title" content="Domain - Trivia With Friends"/>
+<title>Domain - Trivia With Friends</title>
+{% endblock %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/create.css') }}">
-  </head>
-  <body>
-    <div class="container">
-      <nav>
-        <h1>DOMAIN</h1>
-        <div class="tools">
-          <a href="/about">
-            <img 
-              src="{{ url_for('static', filename='icons/Question.svg') }}"
-              alt="about icon"
-              width="20"
-              height="20"
-            />
-          </a>
-          <a href="/create">
-            <img 
-              src="{{ url_for('static', filename='icons/Plus.svg') }}"
-              alt="create icon"
-              width="20"
-              height="20"
-            />
-          </a>
-        </div>
-      </nav>
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/create.css') }}">
+{% endblock %}
 
-      <form action="/create" method="post">
-        <h2>Create Your Game</h2>
-        <div class="input-wrapper">
-          <label for="username">Your Username</label>
-          <input
-            class="neobrutalist"
-            id="username"
-            type="text"
-            name="username"
-            placeholder="enter your username"
-            required
-          />
-        </div>
-        <div class="input-wrapper">
-          <label for="questions">Number of Questions</label>
-          <input
-            class="neobrutalist"
-            id="questions"
-            type="number"
-            value="10"
-            name="questions"
-            required
-          />
-        </div>
-        <div class="input-wrapper">
-          <label for="timer">Question Timer</label>
-          <input
-            class="neobrutalist"
-            id="timer"
-            type="number"
-            value="60"
-            name="timer"
-            required
-          />
-        </div>
-        <div class="input-wrapper">
-          <label>Categories</label>
-          <div class="chip-container">
-            <div class="neobrutalist chip" style="background-color: lightgreen;">
-              General Knowledge
-            </div>
-            <div class="neobrutalist chip">
-              Science
-            </div>
-            <div class="neobrutalist chip">
-              Sports
-            </div>
-            <input type="hidden" name="categories" id="categories"/>
-          </div>
-        </div>
+{% block scripts %}
+{% endblock %}
 
-        <button type="submit" class="default-btn">
-          CREATE GAME
-          <img 
-            src="{{ url_for('static', filename='icons/ArrowRight.svg') }}"
-            alt="arrow right icon"
-            width="14"
-            height="14"
-          />
-        </button>
-      </form>
+{% block nav %}
+<nav>
+  <h1>DOMAIN</h1>
+  <div class="tools">
+    <a href="/about">
+      <img 
+        src="{{ url_for('static', filename='icons/Question.svg') }}"
+        alt="about icon"
+        width="20"
+        height="20"
+      />
+    </a>
+    <a href="/create">
+      <img 
+        src="{{ url_for('static', filename='icons/Plus.svg') }}"
+        alt="create icon"
+        width="20"
+        height="20"
+      />
+    </a>
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<form action="/create" method="post" class="container">
+  <h2>Create Your Game</h2>
+  <div class="input-wrapper">
+    <label for="questions">Number of Questions</label>
+    <input
+      class="neobrutalist"
+      id="questions"
+      type="number"
+      value="10"
+      name="questions"
+      required
+    />
+  </div>
+  <div class="input-wrapper">
+    <label for="timer">Question Timer</label>
+    <input
+      class="neobrutalist"
+      id="timer"
+      type="number"
+      value="60"
+      name="timer"
+      required
+    />
+  </div>
+  <div class="input-wrapper">
+    <label>Categories</label>
+    <div class="chip-container">
+      {% for category in categories %}
+      <div class="neobrutalist chip">
+        {{ category }}
+      </div>
+      {% endfor %}
+      <input type="hidden" name="categories" id="categories"/>
     </div>
-    <script src="{{ url_for('static', filename='scripts/create.js') }}"></script>
-  </body>
-</html>
+  </div>
+
+  <button type="submit" class="default-btn">
+    CREATE GAME
+    <img 
+      src="{{ url_for('static', filename='icons/ArrowRight.svg') }}"
+      alt="arrow right icon"
+      width="14"
+      height="14"
+    />
+  </button>
+</form>
+<script src="{{ url_for('static', filename='scripts/create.js') }}"></script>
+{% endblock %}

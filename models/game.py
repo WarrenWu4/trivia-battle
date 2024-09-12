@@ -1,29 +1,48 @@
+import json
+
 class Game:
-    def __init__(self, room_id):
+    def __init__(self, room_id, questions, timer, active_players=0, state='waiting', current_question=1):
         self.room_id = room_id
-        self.state = "waiting"
-        self.questions = [
-            {"question": "which of the following animals is a mammal?", "answers": ["dog", "cat", "fish", "bird"], "correct": "dog"},
-            {"question": "which of the following animals is a reptile?", "answers": ["dog", "cat", "fish", "bird"], "correct": "fish"},
-            ]
-        self.current_question = 1
-        self.players = []
-        self.timer = 30
-        self.active_connections = 0
-        
-    def update_active_connections(self, connections):
-        """
-        returns tuple of (connections, error)
-        """
-        if (connections < 0 or connections > 2):
-            return (self.active_connections, "room is full")
-        
-        self.active_connections = connections
-        return (self.active_connections, None)
-    
-    def update_game_state(self, state):
+        self.questions = questions
+        self.timer = timer
+        self.active_players = active_players
         self.state = state
-        return (self.state, False)
+        self.current_question = current_question
+        
+    def create_room(self, db):
+        try:
+            cursor = db.cursor()
+            cursor.execute('''INSERT INTO games (room_id, questions, timer, active_players, state, current_question) VALUES (?, ?, ?, ?, ?, ?)''', (self.room_id, json.dumps(self.questions), self.timer, self.active_players, self.state, self.current_question))
+            db.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
     
-    def add_player(self, username):
-        self.players.append(username)
+    def add_player(self, db):
+        try:
+            self.active_players += 1
+            cursor = db.cursor()
+            cursor.execute('''UPDATE games SET active_players = ? WHERE room_id = ?''', (self.active_players, self.room_id))
+            db.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+    
+    def start_game(self, db):
+        try:
+            self.state = "active"
+            cursor = db.cursor()
+            cursor.execute('''UPDATE games SET state = ? WHERE room_id = ?''', (self.state, self.room_id))
+            db.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+        
+    def check_answer(self, curr_question, answer):
+        self.current_question += 1
+        if (self.questions[curr_question-1].get('correct_answer') == answer):
+            return True
+        return False
