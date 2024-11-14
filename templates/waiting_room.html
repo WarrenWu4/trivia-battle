@@ -1,28 +1,8 @@
-<nav>
-    <h1 id="title">WAITING ROOM</h1>
-    <div class="tools">
-        <a href="/create">
-        <img 
-            src="{{ url_for('static', filename='icons/Times.svg') }}"
-            alt="close icon"
-            width="20"
-            height="20"
-        />
-        </a>
+<div>
+    <h2>Waiting Room</h2>
+    <div>
+        <img src="data:image/png;base64,{{ qrcode }}" alt="QR Code"/>
+        <button type="button">Share</button>
     </div>
-</nav>
-
-<div class="actions">
-    <button type="button" class="icon-btn">
-        <img
-            src="{{ url_for('static', filename='icons/Share.svg') }}"
-            alt="share button"
-            width="24"
-            height="24"
-        />
-    </button>
+    <p>waiting for others to join...</p>
 </div>
-
-<p id="message">
-    waiting for players to join...
-</p>

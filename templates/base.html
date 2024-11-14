@@ -12,7 +12,7 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
         {% endblock %}
 
-        {% block scripts %}
+        {% block preload_scripts %}
         {% endblock %}
     </head>
     <body>
@@ -23,6 +23,9 @@
         {% endblock %}
 
         {% block footer %}
+        {% endblock %}
+
+        {% block postload_scripts %}
         {% endblock %}
     </body>
 </html>

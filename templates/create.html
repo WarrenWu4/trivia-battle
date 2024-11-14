@@ -10,43 +10,17 @@
 
 {% block styles %}
 {{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/create.css') }}">
 {% endblock %}
 
-{% block scripts %}
-{% endblock %}
-
-{% block nav %}
-<nav>
-  <h1>DOMAIN</h1>
-  <div class="tools">
-    <a href="/about">
-      <img 
-        src="{{ url_for('static', filename='icons/Question.svg') }}"
-        alt="about icon"
-        width="20"
-        height="20"
-      />
-    </a>
-    <a href="/create">
-      <img 
-        src="{{ url_for('static', filename='icons/Plus.svg') }}"
-        alt="create icon"
-        width="20"
-        height="20"
-      />
-    </a>
-  </div>
-</nav>
+{% block preload_scripts %}
 {% endblock %}
 
 {% block content %}
-<form action="/create" method="post" class="container">
+<form action="/" method="post">
   <h2>Create Your Game</h2>
-  <div class="input-wrapper">
+  <div>
     <label for="questions">Number of Questions</label>
     <input
-      class="neobrutalist"
       id="questions"
       type="number"
       value="10"
@@ -54,10 +28,9 @@
       required
     />
   </div>
-  <div class="input-wrapper">
+  <div>
     <label for="timer">Question Timer</label>
     <input
-      class="neobrutalist"
       id="timer"
       type="number"
       value="60"
@@ -65,19 +38,8 @@
       required
     />
   </div>
-  <div class="input-wrapper">
-    <label>Categories</label>
-    <div class="chip-container">
-      {% for category in categories %}
-      <div class="neobrutalist chip">
-        {{ category }}
-      </div>
-      {% endfor %}
-      <input type="hidden" name="categories" id="categories"/>
-    </div>
-  </div>
 
-  <button type="submit" class="default-btn">
+  <button type="submit">
     CREATE GAME
     <img 
       src="{{ url_for('static', filename='icons/ArrowRight.svg') }}"
@@ -87,5 +49,9 @@
     />
   </button>
 </form>
+{% endblock %}
+
+{% block postload_scripts %}
 <script src="{{ url_for('static', filename='scripts/create.js') }}"></script>
 {% endblock %}
+
