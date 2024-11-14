@@ -17,28 +17,44 @@
 
 {% block content %}
 <div id="content">
-
+    <div>
+        <p id="question">{{ questions[current_idx] }}</p>
+        <div id="answers">
+            {% for answer_choice in answers[current_idx] %}
+                <p>{{ answer_choice }}</p>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block postload_scripts %}
 <script>
-    async function loadContent(url) {
-        const response = await fetch(url)
-        const html = await response.text()
-        document.getElementById('content').innerHTML = html
+    function decodeBase64(encoded) {
+        // remove apostrophes around string first
+        const temp = encoded.substring(5, encoded.length-5);
+        return atob(temp)
     }
 </script>
 <script>
     const room_id = "{{ room_id }}"
-    const user = localStorage.getItem(`${room_id}_user`)
 
-    if (user === null) {
-        
+    let questions = "{{ questions }}"
+    questions = questions.substring(1, questions.length-1).split(", ")
+
+    let all_answer_choices = "{{ answers }}"
+    all_answer_choices = all_answer_choices.substring(1, all_answer_choices.length-1).split("], ")
+    for(let i=0; i<all_answer_choices.length;i++) {
+        all_answer_choices[i] = all_answer_choices[i].substring(1, all_answer_choices[i].length).split(", ")
     }
 
-    let currIdx = 0
-    const urls = ['/waiting_room/test', 'question_active', 'wait_for_response', 'show_correct_answer', 'show_leaderboard', 'show_end_game']
+    const current_idx = Number("{{ current_idx }}")
+
+    document.getElementById("question").innerText = `${decodeBase64(questions[current_idx])}`
+    answerEls = document.getElementById("answers").children;
+    for(let i=0;i<answerEls.length;i++) {
+        console.log(decodeBase64(all_answer_choices[current_idx][i]))
+        answerEls[i].innerText = decodeBase64(all_answer_choices[current_idx][i])
+    }
 </script>
-<script src="{{ url_for('static', filename='scripts/game.js') }}"></script>
 {% endblock %}

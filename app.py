@@ -37,67 +37,59 @@ def index():
         if (game == None):
             return redirect('/error?msg=Error creating room')
         game.create_room(get_db())
-        return redirect(f"/game/{room_id}")
-    
+        return redirect(f"/waiting_room/{room_id}")
     return render_template('create.html')
 
-@app.route('/game/<room_id>')
-def game(room_id):
-    # check if game already exists
-    game = HELPER.get_room(get_db(), room_id)
-    
-    if (game == None):
-        return redirect('/error?msg=Game does not exist')
-    
-    return render_template('game.html', room_id=room_id, state=game.curr_state)
-
 @app.route('/waiting_room/<room_id>')
-def waiting_room():
-    print(request.path)
+def waiting_room(room_id):
+    game = HELPER.get_room(get_db(), room_id)
+    if (game == None):
+        return redirect(f'/error?msg=Game does not exist')
+    if (game.curr_state == 'gaming'):
+        return redirect(f'/game/{room_id}')
     qr = qrcode.make(request.url_root + request.path)
     img_io = io.BytesIO()
     qr.save(img_io, 'PNG')
     img_io.seek(0)
     img_base64 = base64.b64encode(img_io.getvalue()).decode()
-    return render_template('waiting_room.html', qrcode=img_base64)
+    return render_template('waiting_room.html', room_id=room_id, qrcode=img_base64)
 
-"""
-@app.route('/create', methods=['GET', 'POST'])
-def create():
-    if (request.method == 'POST'):
-        # get form data
-        num_questions = request.form.get('questions')
-        # timer = request.form.get('timer')
-        # categories = request.form.get('categories')
-        
-        # generate room id
-        room_id = str(uuid.uuid4())
-        
-        # generate questions
-        data = trivia_data(num_questions).get_trivia_data()
-        
-        # create game object & store in database
-        game = Game(room_id, data)
-        res = game.create_room(get_db())
-        if (not res):
-            return redirect('/error?msg=Error creating room')
-        
-        return redirect(f"/game/{room_id}")
-    else:
-        return render_template('create.html', categories=CATEGORIES)
 
 @app.route('/game/<room_id>')
 def game(room_id):
-    game = get_room(room_id)
-    if (game is None):
-        return redirect('/error?msg=Room not found')
-    return render_template('game.html', initial_state=game.state)
+    game = HELPER.get_room(get_db(), room_id)
+    if (game == None):
+        return redirect(f'/error?msg=Game does not exist')
+    if (game.curr_state != 'gaming'):
+        return redirect(f'/waiting_room/{room_id}')
+    questions = [g.get('question') for g in game.questions]
+    answers = [g.get('all_answers') for g in game.questions]
+    return render_template('game.html', room_id=room_id, questions=questions, answers=answers, current_idx=game.curr_question)
+
+@app.route('/user_join', methods=["POST"])
+def user_join():
+    room_id = request.json.get("room_id")
+    username = request.json.get("username")
+    game = HELPER.get_room(get_db(), room_id)
+    if (game == None):
+        return jsonify({"message":"game does not exist"}), 404
+    game.update_player(get_db(), username)
+    return jsonify({"message": "success"}), 200
+
+@app.route('/game_start', methods=["POST"])
+def game_start():
+    room_id = request.json.get("room_id")
+    game = HELPER.get_room(get_db(), room_id)
+    if (game == None):
+        return jsonify({"message":"game does not exist"}), 404
+    game.update_state(get_db(), "gaming")
+    return jsonify({"message": "success"}), 200
 
 @app.route('/error')
 def error():
     msg = request.args.get('msg')
     return render_template('error.html', msg=msg)
-
+"""
 @app.route('/check_answer', methods=['POST'])
 def check_answer():
     room_id = request.form.get('room_id')

@@ -21,11 +21,11 @@ class Game:
             print(e)
             return False
         
-    def update_state(self, db):
+    def update_state(self, db, new_state):
         try:
             cursor = db.cursor()
             cursor.execute(
-                "UPDATE games SET curr_state = ? WHERE room_id = ?", (self.curr_state, self.room_id)
+                "UPDATE games SET curr_state = ? WHERE room_id = ?", (new_state, self.room_id)
             )
             db.commit()
             return True
@@ -33,8 +33,9 @@ class Game:
             print(e)
             return False
         
-    def update_player(self, db):
+    def update_player(self, db, new_player_username):
         try:
+            self.players.append({new_player_username: 0})
             cursor = db.cursor()
             cursor.execute(
                 "UPDATE games SET players = ? WHERE room_id = ?", (json.dumps(self.players), self.room_id)
