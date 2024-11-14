@@ -85,10 +85,21 @@ def game_start():
     game.update_state(get_db(), "gaming")
     return jsonify({"message": "success"}), 200
 
+@app.route('/check_ans', methods=['POST'])
+def check_ans():
+    room_id = request.json.get("room_id")
+    answer = request.json.get("answer")
+    game = HELPER.get_room(get_db(), room_id)
+    if (game == None):
+        return jsonify({"message": "game does not exist"}), 404
+    res = game.check_answer(answer)
+    return jsonify({"correct": res}), 200
+
 @app.route('/error')
 def error():
     msg = request.args.get('msg')
     return render_template('error.html', msg=msg)
+
 """
 @app.route('/check_answer', methods=['POST'])
 def check_answer():

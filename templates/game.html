@@ -21,7 +21,7 @@
         <p id="question">{{ questions[current_idx] }}</p>
         <div id="answers">
             {% for answer_choice in answers[current_idx] %}
-                <p>{{ answer_choice }}</p>
+                <button type="button">{{ answer_choice }}</button>
             {% endfor %}
         </div>
     </div>
@@ -30,10 +30,39 @@
 
 {% block postload_scripts %}
 <script>
-    function decodeBase64(encoded) {
+    function loadQuestion(question, answer_choices) {
+        document.getElementById("question").innerText = decodeBase64(question)
+        answerEls = document.getElementById("answers").children;
+        for(let i=0;i<answerEls.length;i++) {
+            answerEls[i].innerText = decodeBase64(answer_choices[i])
+            answerEls[i].addEventListener("click", () => {
+                checkAnswer(cleanString(answer_choices[i]))
+            })
+        }
+    }
+    async function checkAnswer(ans) {
+        const response = await fetch("/check_ans", {
+            method: "POST",
+            headers: {
+                    "Content-Type": "application/json"
+                },
+            body: JSON.stringify({ room_id: room_id, answer: ans })
+        })
+        const data = await response.json()
+        if (data.correct) {
+            console.log("correct answer");
+            current_idx++;
+            loadQuestion(questions[current_idx], all_answer_choices[current_idx])
+        } else {
+            console.log("incorrect answer");
+        }
+    }
+    function cleanString(input) {
         // remove apostrophes around string first
-        const temp = encoded.substring(5, encoded.length-5);
-        return atob(temp)
+        return input.substring(5, input.length-5);
+    }
+    function decodeBase64(encoded) {
+        return atob(cleanString(encoded))
     }
 </script>
 <script>
@@ -48,13 +77,15 @@
         all_answer_choices[i] = all_answer_choices[i].substring(1, all_answer_choices[i].length).split(", ")
     }
 
-    const current_idx = Number("{{ current_idx }}")
+    let current_idx = Number("{{ current_idx }}")
 
     document.getElementById("question").innerText = `${decodeBase64(questions[current_idx])}`
     answerEls = document.getElementById("answers").children;
     for(let i=0;i<answerEls.length;i++) {
-        console.log(decodeBase64(all_answer_choices[current_idx][i]))
         answerEls[i].innerText = decodeBase64(all_answer_choices[current_idx][i])
+        answerEls[i].addEventListener("click", () => {
+            checkAnswer(cleanString(all_answer_choices[current_idx][i]))
+        })
     }
 </script>
 {% endblock %}
