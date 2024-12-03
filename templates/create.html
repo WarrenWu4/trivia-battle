@@ -9,18 +9,26 @@
 {% endblock %}
 
 {% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/create.css') }}">
 {{ super() }}
 {% endblock %}
 
 {% block preload_scripts %}
 {% endblock %}
 
+{% block nav %}
+<nav>
+  <h1>DOMAIN</h1>
+</nav>
+{% endblock %}
+
 {% block content %}
 <form action="/" method="post">
   <h2>Create Your Game</h2>
-  <div>
+  <div class="input-wrapper">
     <label for="questions">Number of Questions</label>
     <input
+      class="neobrutalist"
       id="questions"
       type="number"
       value="10"
@@ -28,9 +36,10 @@
       required
     />
   </div>
-  <div>
+  <div class="input-wrapper">
     <label for="timer">Question Timer</label>
     <input
+      class="neobrutalist"
       id="timer"
       type="number"
       value="60"
@@ -39,7 +48,7 @@
     />
   </div>
 
-  <button type="submit">
+  <button class="default-btn" type="submit">
     CREATE GAME
     <img 
       src="{{ url_for('static', filename='icons/ArrowRight.svg') }}"
@@ -52,6 +61,5 @@
 {% endblock %}
 
 {% block postload_scripts %}
-<!-- <script src="{{ url_for('static', filename='scripts/create.js') }}"></script> -->
 {% endblock %}
 

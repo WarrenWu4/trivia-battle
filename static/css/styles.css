@@ -16,6 +16,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "Pixeloid", sans-serif;
 }
 
 html {
@@ -26,7 +27,6 @@ body {
   width: 100vw;
   min-height: 100vh;
   overflow-x: hidden;
-  font-family: "Pixeloid", sans-serif;
   display: grid;
   place-items: center;
 }
@@ -57,6 +57,7 @@ body {
   font-family: "Pixeloid", sans-serif;
   font-size: 1.6rem;
   text-decoration: none;
+  transition: all 0.2s ease-in-out;
 }
 
 .icon-btn {
