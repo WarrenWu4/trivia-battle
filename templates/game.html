@@ -37,12 +37,17 @@
         <p id="question"></p>
         <div id="answers"></div>
     </div>
+    <p class="neobrutalist toolbar" id="correctness"></p>
 </div>
 {% endblock %}
 
 {% block postload_scripts %}
 <script>
     const game_id = "{{ game_id }}"
+
+    const questionEl = document.getElementById("question");
+    const answersEl = document.getElementById("answers");
+    const correctnessEl = document.getElementById("correctness");
 
     init();
 
@@ -58,8 +63,6 @@
         answer_choices = data.answers
         curr_question = data.curr_question
 
-        const questionEl = document.getElementById("question");
-        const answersEl = document.getElementById("answers");
         questionEl.textContent = decodeBase64(question);
         for (let i = answersEl.children.length - 1; i >= 0; i--) {
             answersEl.removeChild(answersEl.children[i]);
@@ -74,8 +77,35 @@
             text.textContent = decodeBase64(answer_choices[i])
             btn.appendChild(text);
             btn.addEventListener("click", async function() {
-                checkAns(answer_choices[i]);
-                getNextQuestion();
+                const data = await checkAns(answer_choices[i]);
+                if (data.correct) {
+                    // highlight correct answer green
+                    for (let j = 0; j < answersEl.children.length; j++) {
+                        if (answer_choices[j] === data.correct_answer) {
+                            answersEl.children[j].style.color = "green";
+                        }
+                    }
+                    correctnessEl.style.display = "block";
+                    correctnessEl.textContent = "CORRECT";
+                    correctnessEl.style.color = "green";
+                } else {
+                    // if answer choice isn't correct, highlight your answer red and correct answer green
+                    for (let j = 0; j < answersEl.children.length; j++) {
+                        if (answer_choices[j] === data.correct_answer) {
+                            answersEl.children[j].style.color = "green";
+                        }
+                        if (answer_choices[j] === data.your_answer) {
+                            answersEl.children[j].style.color = "red";
+                        }
+                    }
+                    correctnessEl.style.display = "block";
+                    correctnessEl.textContent = "INCORRECT";
+                    correctnessEl.style.color = "red";
+                }
+                setTimeout(() => {
+                    correctnessEl.style.display = "none";
+                    getNextQuestion();
+                }, 2000);
             });
 
             answersEl.appendChild(btn)
@@ -97,7 +127,7 @@
             })
         });
         const data = await response.json();
-        return data.correct;
+        return data;
     }
 
     async function getNextQuestion() {

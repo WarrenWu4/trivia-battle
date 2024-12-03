@@ -65,9 +65,9 @@ def check_answer(game_id):
     game:Game = Game(game_id, [], [], [], 0, get_db()).get_game()
     answer = request.json.get('answer')
     if game.check_answer(answer):
-        return jsonify({"correct": True}), 200
+        return jsonify({"correct": True, "your_answer": answer, "correct_answer": game.correct_answers[game.curr_question]}), 200
     else:
-        return jsonify({"correct": False}), 200
+        return jsonify({"correct": False, "your_answer": answer, "correct_answer": game.correct_answers[game.curr_question]}), 200
     
 @app.route('/game/<game_id>/next', methods=['POST'])
 def next_question(game_id):
