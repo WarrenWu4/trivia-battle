@@ -9,15 +9,31 @@
 {% endblock %}
 
 {% block styles %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/game.css') }}">
 {{ super() }}
 {% endblock %}
 
 {% block preload_scripts %}
 {% endblock %}
 
-{% block content %}
-<div id="content">
+{% block nav %}
+<nav>
+    <h1>USERNAME</h1>
     <div>
+        <a href="/">
+            <img src="{{ url_for('static', filename='icons/Times.svg') }}" alt="close"/>
+        </a>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="neobrutalist toolbar">
+        <p>60 sec</p>
+        <p>+2000 pts</p>
+    </div>
+    <div class="neobrutalist qa">
         <p id="question"></p>
         <div id="answers"></div>
     </div>
@@ -50,11 +66,18 @@
         }
         for(let i=0; i<answer_choices.length; i++) {
             const btn = document.createElement("button")
-            btn.textContent = decodeBase64(answer_choices[i])
+            const img = document.createElement("img")
+            img.src = "{{ url_for('static', filename='icons/Play.svg') }}"
+            btn.appendChild(img);
+
+            const text = document.createElement("p")
+            text.textContent = decodeBase64(answer_choices[i])
+            btn.appendChild(text);
             btn.addEventListener("click", async function() {
                 checkAns(answer_choices[i]);
                 getNextQuestion();
             });
+
             answersEl.appendChild(btn)
         }
     }
