@@ -21,7 +21,7 @@ class Game:
                     answers TEXT,
                     correct_answers TEXT,
                     curr_question INTEGER DEFAULT 0
-                )
+                );
             """)
         except Exception as e:
             print(e)

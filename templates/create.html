@@ -26,6 +26,17 @@
 <form action="/" method="post">
   <h2>Create Your Game</h2>
   <div class="input-wrapper">
+    <label for="questions">Your Username</label>
+    <input
+      class="neobrutalist"
+      id="username"
+      type="text"
+      value="Pickles Von Crunch"
+      name="username"
+      required
+    />
+  </div>
+  <div class="input-wrapper">
     <label for="questions">Number of Questions</label>
     <input
       class="neobrutalist"
@@ -61,5 +72,18 @@
 {% endblock %}
 
 {% block postload_scripts %}
+<script>
+  const funny = ["Toasty McButterpants", "Pickles Von Crunch", "Waffleton Sizzlebottom", "Nacho Cheeseholic", "Olive Q. Martini", "Jellybean Snickerdoodle", "Cornelius Popcornicus", "Pancake Fluffington", "Fluffy McSnoutface", "Bark Twain", "Meow Zedong", "Snappy Turtlepants", "Pawsitively Clawrence", "Quackers McDuckface", "Wiggly Wigglesworth", "Hootie Featherbottom", "Sprinkle Stardustington", "Glorbnax the Wobbly", "Zany Moonwhisker", "Bloop Fizzlewink", "Twinkle McFroggle", "Professor Quirkadoo", "Sir Bananington III", "Lady Zoodleflop", "Bytey McGiggles", "Wi-Fido Snarkington", "Clickety Clackerson", "Captain Debuggeroo", "Cache Memorykins", "Pixel Doodlebug", "Glitchy Von Zap", "Algo Rhythmicus", "Soggy Pants McGee", "Doodle McSquiggleface", "Bloopity Blorpington", "Chauncey Wobblebottom", "Snorkel Dingledoodle", "Lumpy Sporklebean", "Fizzlebop Zanytoes", "Wobblewoo Noodlebrain"]
+  const username = document.getElementById("username")
+  username.value = funny[Math.floor(Math.random() * funny.length)]
+
+  localStorage.setItem("domain_username", username.value)
+  username.addEventListener("input", () => {
+    if (username.value === "") {
+      username.value = funny[Math.floor(Math.random() * funny.length)]
+    }
+    localStorage.setItem("domain_username", username.value)
+  })
+</script>
 {% endblock %}
 

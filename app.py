@@ -1,6 +1,7 @@
 from flask import Flask, redirect, render_template, request, g, jsonify
 from flask_socketio import SocketIO
 from models.game import Game
+from models.player import Player
 import uuid
 import sqlite3
 import random
@@ -29,6 +30,7 @@ def close_connection(exception):
 def index():
     if (request.method == 'POST'):
         num_questions = request.form.get('questions')
+        username = request.form.get('username')
         game_id = str(uuid.uuid4())
         trivia_data = {"questions": [], "answers": [], "correct_answers": []}
         try:
@@ -42,6 +44,7 @@ def index():
                 trivia_data["answers"].append(all_answers)
                 trivia_data["correct_answers"].append(entry.get('correct_answer'))
             Game(game_id, trivia_data.get('questions'), trivia_data.get('answers'), trivia_data.get('correct_answers'), 0, get_db()).create_game()
+            Player(game_id, username, 0, get_db()).create_player()
         except Exception as e:
             print(e)
             return redirect('/error?msg=Error creating game')
@@ -63,10 +66,15 @@ def get_question(game_id):
 @app.route('/game/<game_id>/check', methods=['POST'])
 def check_answer(game_id):
     game:Game = Game(game_id, [], [], [], 0, get_db()).get_game()
+    username = request.json.get('username')
+    curr_time = request.json.get('curr_time')
     answer = request.json.get('answer')
+    player:Player = Player(game_id, username, 0, get_db()).get_player(username, game_id)
     if game.check_answer(answer):
+        player.update_score(60, curr_time, True)
         return jsonify({"correct": True, "your_answer": answer, "correct_answer": game.correct_answers[game.curr_question]}), 200
     else:
+        player.update_score(60, curr_time, False)
         return jsonify({"correct": False, "your_answer": answer, "correct_answer": game.correct_answers[game.curr_question]}), 200
     
 @app.route('/game/<game_id>/next', methods=['POST'])
@@ -76,6 +84,11 @@ def next_question(game_id):
     if (game.curr_question >= len(game.questions)):
         return jsonify({"ok": True, "game_over": True}), 200
     return jsonify({"ok": True, "game_over": False}), 200
+
+@app.route('/player/<username>/<game_id>')
+def get_player(username, game_id):
+    player:Player = Player(game_id, username, 0, get_db()).get_player(username, game_id)
+    return jsonify({"score": player.score}), 200
 
 @app.route('/game/<game_id>/results')
 def results(game_id):
