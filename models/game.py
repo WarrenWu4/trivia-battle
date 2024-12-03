@@ -1,65 +1,72 @@
+from typing import List
 import json
 
 class Game:
-    def __init__(self, room_id, curr_state="waiting", curr_question=0, players=[], questions=[], timer=60):
-        self.room_id = room_id
-        self.curr_state = curr_state
-        self.curr_question = curr_question
-        self.players = players
+    def __init__(self, game_id:str, questions:List[str], answers:List[str], correct_answers:List[str], curr_question:int, db_connection):
+        self.game_id = game_id
         self.questions = questions
-        self.timer = timer
-
-    def create_room(self, db):
+        self.answers = answers
+        self.correct_answers = correct_answers
+        self.curr_question = curr_question
+        self.db_connection = db_connection
+        self.db_cursor = self.db_connection.cursor()
+        self.init_game_table()
+    
+    def init_game_table(self):
         try:
-            cursor = db.cursor()
-            cursor.execute(
-                "INSERT INTO games (room_id, curr_state, curr_question, players, questions, timer) VALUES (?, ?, ?, ?, ?, ?)", (self.room_id, self.curr_state, self.curr_question, json.dumps(self.players), json.dumps(self.questions), self.timer)
-            )
-            db.commit()
-            return True
+            self.db_cursor.execute("""
+                CREATE TABLE IF NOT EXISTS games (
+                    game_id TEXT PRIMARY KEY,
+                    questions TEXT,
+                    answers TEXT,
+                    correct_answers TEXT,
+                    curr_question INTEGER DEFAULT 0
+                )
+            """)
         except Exception as e:
             print(e)
-            return False
-        
-    def update_state(self, db, new_state):
+            raise Exception("Error initializing game table")
+    
+    def create_game(self):
         try:
-            cursor = db.cursor()
-            cursor.execute(
-                "UPDATE games SET curr_state = ? WHERE room_id = ?", (new_state, self.room_id)
-            )
-            db.commit()
-            return True
+            self.db_cursor.execute("""
+                INSERT INTO games (game_id, questions, answers, correct_answers, curr_question)
+                VALUES (?, ?, ?, ?, ?)
+            """, (self.game_id, json.dumps(self.questions), json.dumps(self.answers), json.dumps(self.correct_answers), self.curr_question))
+            self.db_connection.commit()
         except Exception as e:
             print(e)
-            return False
-        
-    def update_player(self, db, new_player_username):
+            raise Exception("Error generating game")
+    
+    def get_game(self):
         try:
-            self.players.append({new_player_username: 0})
-            cursor = db.cursor()
-            cursor.execute(
-                "UPDATE games SET players = ? WHERE room_id = ?", (json.dumps(self.players), self.room_id)
-            )
-            db.commit()
-            return True
+            self.db_cursor.execute("""
+                SELECT * FROM games WHERE game_id = ?
+            """, (self.game_id,))
+            game = self.db_cursor.fetchone()
+            if game:
+                self.questions = json.loads(game[1])
+                self.answers = json.loads(game[2])
+                self.correct_answers = json.loads(game[3])
+                self.curr_question = game[4]
+            return self
         except Exception as e:
             print(e)
-            return False
+            raise Exception("Error getting game")
         
-    def next_question(self, db):
+    def check_answer(self, answer:str) -> bool:
+        """
+        compare base64 encoded answer to the correct answer in case there are special characters
+        """
+        return self.correct_answers[self.curr_question] == answer
+    
+    def next_question(self):
         try:
             self.curr_question += 1
-            cursor = db.cursor()
-            cursor.execute(
-                "UPDATE games SET curr_question = ? WHERE room_id = ?", (self.curr_question, self.room_id)
-            )
-            db.commit()
-            return True
+            self.db_cursor.execute("""
+                UPDATE games SET curr_question = ? WHERE game_id = ?
+            """, (self.curr_question, self.game_id))
+            self.db_connection.commit()
         except Exception as e:
             print(e)
-            return False
-        
-    def check_answer(self, answer):
-        if (self.questions[self.curr_question]['correct_answer'] == answer):
-            return True
-        return False
+            raise Exception("Error getting next question")

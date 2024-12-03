@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block meta %} 
+<meta name="description" content="Play a fun game of trivia with your friends!"/>
+<meta property="og:image" content="{{ url_for('static', filename='art/cloud1.png') }}"/>
+<meta property="og:description" content="Play a fun game of trivia with your friends!"/>
+<meta property="og:title" content="Domain - Trivia With Friends"/>
+<title>Domain - Trivia With Friends</title>
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+{% endblock %}
+
+{% block preload_scripts %}
+{% endblock %}
+
+{% block content %}
+<div id="content">
+    <div>
+        <h1>Game Over</h1>
+        <p>You scored: 10 out of 10</p>
+        <a href="/">Play Again</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block postload_scripts %}
+{% endblock %}

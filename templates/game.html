@@ -18,74 +18,80 @@
 {% block content %}
 <div id="content">
     <div>
-        <p id="question">{{ questions[current_idx] }}</p>
-        <div id="answers">
-            {% for answer_choice in answers[current_idx] %}
-                <button type="button">{{ answer_choice }}</button>
-            {% endfor %}
-        </div>
+        <p id="question"></p>
+        <div id="answers"></div>
     </div>
 </div>
 {% endblock %}
 
 {% block postload_scripts %}
 <script>
-    function loadQuestion(question, answer_choices) {
-        document.getElementById("question").innerText = decodeBase64(question)
-        answerEls = document.getElementById("answers").children;
-        for(let i=0;i<answerEls.length;i++) {
-            answerEls[i].innerText = decodeBase64(answer_choices[i])
-            answerEls[i].addEventListener("click", () => {
-                checkAnswer(cleanString(answer_choices[i]))
-            })
-        }
-    }
-    async function checkAnswer(ans) {
-        const response = await fetch("/check_ans", {
-            method: "POST",
+    const game_id = "{{ game_id }}"
+
+    init();
+
+    async function init() {
+        const response = await fetch(`/game/${game_id}/get_question`, {
+            method: 'POST',
             headers: {
-                    "Content-Type": "application/json"
-                },
-            body: JSON.stringify({ room_id: room_id, answer: ans })
-        })
-        const data = await response.json()
-        if (data.correct) {
-            console.log("correct answer");
-            current_idx++;
-            loadQuestion(questions[current_idx], all_answer_choices[current_idx])
-        } else {
-            console.log("incorrect answer");
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        question = data.question
+        answer_choices = data.answers
+        curr_question = data.curr_question
+
+        const questionEl = document.getElementById("question");
+        const answersEl = document.getElementById("answers");
+        questionEl.textContent = decodeBase64(question);
+        for (let i = answersEl.children.length - 1; i >= 0; i--) {
+            answersEl.removeChild(answersEl.children[i]);
+        }
+        for(let i=0; i<answer_choices.length; i++) {
+            const btn = document.createElement("button")
+            btn.textContent = decodeBase64(answer_choices[i])
+            btn.addEventListener("click", async function() {
+                checkAns(answer_choices[i]);
+                getNextQuestion();
+            });
+            answersEl.appendChild(btn)
         }
     }
-    function cleanString(input) {
-        // remove apostrophes around string first
-        return input.substring(5, input.length-5);
-    }
+
     function decodeBase64(encoded) {
-        return atob(cleanString(encoded))
-    }
-</script>
-<script>
-    const room_id = "{{ room_id }}"
-
-    let questions = "{{ questions }}"
-    questions = questions.substring(1, questions.length-1).split(", ")
-
-    let all_answer_choices = "{{ answers }}"
-    all_answer_choices = all_answer_choices.substring(1, all_answer_choices.length-1).split("], ")
-    for(let i=0; i<all_answer_choices.length;i++) {
-        all_answer_choices[i] = all_answer_choices[i].substring(1, all_answer_choices[i].length).split(", ")
+        return atob(encoded)
     }
 
-    let current_idx = Number("{{ current_idx }}")
+    async function checkAns(answer_choice) {
+        const response = await fetch(`/game/${game_id}/check`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                answer: answer_choice
+            })
+        });
+        const data = await response.json();
+        return data.correct;
+    }
 
-    document.getElementById("question").innerText = `${decodeBase64(questions[current_idx])}`
-    answerEls = document.getElementById("answers").children;
-    for(let i=0;i<answerEls.length;i++) {
-        answerEls[i].innerText = decodeBase64(all_answer_choices[current_idx][i])
-        answerEls[i].addEventListener("click", () => {
-            checkAnswer(cleanString(all_answer_choices[current_idx][i]))
-        })
+    async function getNextQuestion() {
+        const response = await fetch(`/game/${game_id}/next`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (data.ok && !data.game_over) {
+            init();
+        } else if (data.ok && data.game_over) {
+            window.location.href = `/game/${game_id}/results`;
+        } else {
+            console.log("uh oh...");
+        }
     }
 </script>
 {% endblock %}

@@ -21,8 +21,9 @@ def get_all_games():
         games = cursor.fetchall()
         db.close()
         for game in games:
-            print(game[3])
+            print(game[0])
     except:
         print('error occurred getting all games')
 
-get_all_games()
+# get_all_games()
+clear_game_table()
