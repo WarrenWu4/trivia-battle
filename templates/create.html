@@ -26,7 +26,7 @@
 <form action="/" method="post">
   <h2>Create Your Game</h2>
   <div class="input-wrapper">
-    <label for="questions">Your Username</label>
+    <label for="username">Your Username</label>
     <input
       class="neobrutalist"
       id="username"
@@ -58,6 +58,12 @@
       required
     />
   </div>
+  <div class="input-wrapper">
+    <label for="categories">Categories</label>
+    <div class="chip-container">
+    </div>
+    <input type="checkbox" id="categories" name="categories" value="All">
+  </div>
 
   <button class="default-btn" type="submit">
     CREATE GAME
@@ -73,6 +79,24 @@
 
 {% block postload_scripts %}
 <script>
+  const categories = ["All", "General Knowledge", "Books", "Films & TV", "Music", "Video Games", "Science & Nature", "Math", "Mythology", "Sports", "Geography", "History", "Politics", "Art", "Celebrities", "Animals", "Vehicles", "Anime & Manga"]
+  const chipContainer = document.querySelector(".chip-container")
+  categories.forEach(category => {
+    const chip = document.createElement("p")
+    chip.classList = "chip neobrutalist"
+    chip.textContent = category
+    chip.addEventListener("click", function() {
+      if (chip.style.backgroundColor === "lightgreen") {
+        chip.style.backgroundColor = "white";
+      } else {
+        chip.style.backgroundColor = "lightgreen";
+      }
+    })
+    chipContainer.appendChild(chip)
+  })
+  const categoryEl = document.getElementById("categories");
+  categoryEl.style.display = "none";
+
   const funny = ["Toasty McButterpants", "Pickles Von Crunch", "Waffleton Sizzlebottom", "Nacho Cheeseholic", "Olive Q. Martini", "Jellybean Snickerdoodle", "Cornelius Popcornicus", "Pancake Fluffington", "Fluffy McSnoutface", "Bark Twain", "Meow Zedong", "Snappy Turtlepants", "Pawsitively Clawrence", "Quackers McDuckface", "Wiggly Wigglesworth", "Hootie Featherbottom", "Sprinkle Stardustington", "Glorbnax the Wobbly", "Zany Moonwhisker", "Bloop Fizzlewink", "Twinkle McFroggle", "Professor Quirkadoo", "Sir Bananington III", "Lady Zoodleflop", "Bytey McGiggles", "Wi-Fido Snarkington", "Clickety Clackerson", "Captain Debuggeroo", "Cache Memorykins", "Pixel Doodlebug", "Glitchy Von Zap", "Algo Rhythmicus", "Soggy Pants McGee", "Doodle McSquiggleface", "Bloopity Blorpington", "Chauncey Wobblebottom", "Snorkel Dingledoodle", "Lumpy Sporklebean", "Fizzlebop Zanytoes", "Wobblewoo Noodlebrain"]
   const username = document.getElementById("username")
   username.value = funny[Math.floor(Math.random() * funny.length)]
