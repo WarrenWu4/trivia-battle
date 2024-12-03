@@ -9,18 +9,32 @@
 {% endblock %}
 
 {% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/game.css') }}">
 {{ super() }}
 {% endblock %}
 
 {% block preload_scripts %}
 {% endblock %}
 
+{% block nav %}
+<nav>
+    <h1>GAME OVER</h1>
+</nav>
+{% endblock %}
+
 {% block content %}
-<div id="content">
-    <div>
-        <h1>Game Over</h1>
-        <p>You scored: 10 out of 10</p>
-        <a href="/">Play Again</a>
+<div class="content">
+    <div class="neobrutalist over-container">
+        <h2>You scored: 10 out of 10</h2>
+        <a class="default-btn" href="/">
+            PLAY AGAIN
+            <img 
+                src="{{ url_for('static', filename='icons/ArrowRight.svg') }}"
+                alt="arrow right icon"
+                width="14"
+                height="14"
+            />
+        </a>
     </div>
 </div>
 {% endblock %}
