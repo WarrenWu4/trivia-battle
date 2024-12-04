@@ -29,12 +29,15 @@ def close_connection(exception):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if (request.method == 'POST'):
-        num_questions = request.form.get('questions')
+        num_questions = int(request.form.get('questions'))
         username = request.form.get('username')
+        category = request.form.get('category')
         game_id = str(uuid.uuid4())
         trivia_data = {"questions": [], "answers": [], "correct_answers": []}
         try:
-            url = f'https://opentdb.com/api.php?amount={num_questions}&type=multiple&encode=base64'
+            # ! big problem with api is rate limiting is dogshit so can only make a call every 5 seconds
+            # ! so if two people try to create a game at the same time, it will crash
+            url = f'https://opentdb.com/api.php?amount={num_questions}&category={category}&type=multiple&encode=base64'
             response = requests.get(url)
             data = response.json().get('results')
             for entry in data:

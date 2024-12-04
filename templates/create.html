@@ -59,10 +59,10 @@
     />
   </div>
   <div class="input-wrapper">
-    <label for="categories">Categories</label>
+    <label for="category">Categories (Choose Only 1)</label>
     <div class="chip-container">
     </div>
-    <input type="checkbox" id="categories" name="categories" value="All">
+    <input id="category" type="text" value="" name="category">
   </div>
 
   <button class="default-btn" type="submit">
@@ -79,23 +79,39 @@
 
 {% block postload_scripts %}
 <script>
-  const categories = ["All", "General Knowledge", "Books", "Films & TV", "Music", "Video Games", "Science & Nature", "Math", "Mythology", "Sports", "Geography", "History", "Politics", "Art", "Celebrities", "Animals", "Vehicles", "Anime & Manga"]
+  const categories = ["General Knowledge", "Books", "Films & TV", "Music", "Video Games", "Science & Nature", "Math", "Mythology", "Sports", "Geography", "History", "Politics", "Art", "Celebrities", "Animals", "Vehicles", "Anime & Manga"]
+  const categoryIds = ["9", "10", "11,14", "12", "15", "17", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "31"]
   const chipContainer = document.querySelector(".chip-container")
-  categories.forEach(category => {
+  const categoryEl = document.getElementById("category");
+  categoryEl.style.display = "none";
+  categoryEl.value = "9";
+  let active = 0;
+
+  categories.forEach((category, idx) => {
     const chip = document.createElement("p")
     chip.classList = "chip neobrutalist"
     chip.textContent = category
-    chip.addEventListener("click", function() {
-      if (chip.style.backgroundColor === "lightgreen") {
-        chip.style.backgroundColor = "white";
-      } else {
-        chip.style.backgroundColor = "lightgreen";
-      }
-    })
+    if (category === "General Knowledge") {
+      chip.style.backgroundColor = "lightgreen";
+    }
     chipContainer.appendChild(chip)
   })
-  const categoryEl = document.getElementById("categories");
-  categoryEl.style.display = "none";
+
+  for (let i = 0; i < chipContainer.children.length; i++) {
+    chipContainer.children[i].addEventListener("click", function() {
+      // 2 states: 1. active 2. inactive
+      // if active, don't do anything
+      // if inactive, set to active, set previous active to inactive
+      if (chipContainer.children[i].style.backgroundColor !== "lightgreen") {
+        // set previous active to inactive
+        chipContainer.children[active].style.backgroundColor = "white";
+        // set current to active
+        chipContainer.children[i].style.backgroundColor = "lightgreen";
+        categoryEl.value = categoryIds[i];
+        active = i;
+      }
+    })
+  }
 
   const funny = ["Toasty McButterpants", "Pickles Von Crunch", "Waffleton Sizzlebottom", "Nacho Cheeseholic", "Olive Q. Martini", "Jellybean Snickerdoodle", "Cornelius Popcornicus", "Pancake Fluffington", "Fluffy McSnoutface", "Bark Twain", "Meow Zedong", "Snappy Turtlepants", "Pawsitively Clawrence", "Quackers McDuckface", "Wiggly Wigglesworth", "Hootie Featherbottom", "Sprinkle Stardustington", "Glorbnax the Wobbly", "Zany Moonwhisker", "Bloop Fizzlewink", "Twinkle McFroggle", "Professor Quirkadoo", "Sir Bananington III", "Lady Zoodleflop", "Bytey McGiggles", "Wi-Fido Snarkington", "Clickety Clackerson", "Captain Debuggeroo", "Cache Memorykins", "Pixel Doodlebug", "Glitchy Von Zap", "Algo Rhythmicus", "Soggy Pants McGee", "Doodle McSquiggleface", "Bloopity Blorpington", "Chauncey Wobblebottom", "Snorkel Dingledoodle", "Lumpy Sporklebean", "Fizzlebop Zanytoes", "Wobblewoo Noodlebrain"]
   const username = document.getElementById("username")

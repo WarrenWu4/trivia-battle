@@ -7,7 +7,8 @@ def clear_game_table():
     try:
         db = sqlite3.connect(database)
         cursor = db.cursor()
-        cursor.execute('DROP TABLE IF EXISTS games')
+        cursor.execute('DROP TABLE IF EXISTS games;')
+        cursor.execute('DROP TABLE IF EXISTS players;')
         db.commit()
         db.close()
     except:
