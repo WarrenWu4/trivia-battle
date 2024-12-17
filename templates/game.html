@@ -31,7 +31,7 @@
 <div class="content">
     <div class="neobrutalist toolbar">
         <p id="curr_question">Q1</p>
-        <p>60 sec</p>
+        <p id="timer">sec</p>
     </div>
     <div class="neobrutalist qa">
         <p id="question"></p>
@@ -50,12 +50,14 @@
     const username = localStorage.getItem("domain_username");
     let curr_time = 60;
     let curr_question = 1;
+    let timer = localStorage.getItem("domain_timer") || 60;
 
     const questionEl = document.getElementById("question");
     const answersEl = document.getElementById("answers");
     const correctnessEl = document.getElementById("correctness");
     const scoreEl = document.getElementById("score");
     const currQuestionEl = document.getElementById("curr_question");
+    const timerEl = document.getElementById("timer");
 
     init();
 
@@ -70,6 +72,17 @@
         question = data.question
         answer_choices = data.answers
         curr_question = data.curr_question
+
+        timeInterval = setInterval(() => {
+            timer--;
+            timerEl.textContent = `${timer} sec`;
+            localStorage.setItem("domain_timer", timer);
+            if (timer <= 0) {
+                clearInterval(timeInterval);
+                getNextQuestion();
+                timer = 60;
+            }
+        }, 1000)
 
         currQuestionEl.textContent = `Q${(curr_question+1)}`;
         questionEl.textContent = decodeBase64(question);
@@ -114,6 +127,8 @@
                 setTimeout(() => {
                     correctnessEl.style.display = "none";
                     getNextQuestion();
+                    clearInterval(timeInterval);
+                    timer = 60;
                 }, 2000);
             });
 
