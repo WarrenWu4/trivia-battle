@@ -2,10 +2,12 @@ from flask import Flask, redirect, render_template, request, g, jsonify
 from flask_socketio import SocketIO
 from models.game import Game
 from models.player import Player
+from models.kodak import Kodak
 import uuid
 import sqlite3
 import random
 import requests
+import time
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -32,25 +34,16 @@ def index():
         num_questions = int(request.form.get('questions'))
         username = request.form.get('username')
         category = request.form.get('category')
+        difficulty = request.form.get('difficulty')
+        print(request.form)
         game_id = str(uuid.uuid4())
         trivia_data = {"questions": [], "answers": [], "correct_answers": []}
-        try:
-            # ! big problem with api is rate limiting is dogshit so can only make a call every 5 seconds
-            # ! so if two people try to create a game at the same time, it will crash
-            url = f'https://opentdb.com/api.php?amount={num_questions}&category={category}&type=multiple&encode=base64'
-            response = requests.get(url)
-            data = response.json().get('results')
-            for entry in data:
-                all_answers = entry.get('incorrect_answers') + [entry.get('correct_answer')]
-                random.shuffle(all_answers)
-                trivia_data["questions"].append(entry.get('question'))
-                trivia_data["answers"].append(all_answers)
-                trivia_data["correct_answers"].append(entry.get('correct_answer'))
-            Game(game_id, trivia_data.get('questions'), trivia_data.get('answers'), trivia_data.get('correct_answers'), 0, get_db()).create_game()
-            Player(game_id, username, 0, get_db()).create_player()
-        except Exception as e:
-            print(e)
-            return redirect('/error?msg=Error creating game')
+        while (code := Kodak().fetch_questions(num_questions, category, difficulty, trivia_data, game_id, username, get_db())) != 0:
+            if (code == 5):
+                print('Hit rate limit, fetching questions again in 5 seconds')
+                time.sleep(5)
+            else:
+                return redirect('/error?msg=Error creating game')
         return redirect(f"/game/{game_id}")
     return render_template('create.html')
 

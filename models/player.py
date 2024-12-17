@@ -12,7 +12,8 @@ class Player:
             self.db_connection.execute("PRAGMA foreign_keys = ON;")
             self.db_cursor.execute("""
                 CREATE TABLE IF NOT EXISTS players (
-                    username TEXT PRIMARY KEY,
+                    uuid INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT,
                     score INTEGER DEFAULT 0,
                     game_id TEXT NOT NULL,
                     FOREIGN KEY (game_id) REFERENCES games(game_id)
@@ -42,9 +43,9 @@ class Player:
             """, (username, game_id))
             player = self.db_cursor.fetchone()
             if player:
-                self.username = player[0]
-                self.score = player[1]
-                self.game_id = player[2]
+                self.username = player[1]
+                self.score = player[2]
+                self.game_id = player[3]
                 return self
             else:
                 raise Exception("Player not found")

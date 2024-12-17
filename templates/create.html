@@ -60,9 +60,18 @@
   </div>
   <div class="input-wrapper">
     <label for="category">Categories (Choose Only 1)</label>
-    <div class="chip-container">
+    <div id="category-container" class="chip-container">
     </div>
     <input id="category" type="text" value="" name="category">
+  </div>
+  <div class="input-wrapper">
+    <label for="difficulty">Difficulty</label>
+    <div id="difficulty-container" class="chip-container">
+      <p style="background-color: lightgreen" class="chip neobrutalist">Easy</p>
+      <p class="chip neobrutalist">Medium</p>
+      <p class="chip neobrutalist">Hard</p>
+    </div>
+    <input style="display: none" id="difficulty" type="text" value="easy" name="difficulty">
   </div>
 
   <button class="default-btn" type="submit">
@@ -78,52 +87,6 @@
 {% endblock %}
 
 {% block postload_scripts %}
-<script>
-  const categories = ["General Knowledge", "Books", "Films & TV", "Music", "Video Games", "Science & Nature", "Math", "Mythology", "Sports", "Geography", "History", "Politics", "Art", "Celebrities", "Animals", "Vehicles", "Anime & Manga"]
-  const categoryIds = ["9", "10", "11,14", "12", "15", "17", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "31"]
-  const chipContainer = document.querySelector(".chip-container")
-  const categoryEl = document.getElementById("category");
-  categoryEl.style.display = "none";
-  categoryEl.value = "9";
-  let active = 0;
-
-  categories.forEach((category, idx) => {
-    const chip = document.createElement("p")
-    chip.classList = "chip neobrutalist"
-    chip.textContent = category
-    if (category === "General Knowledge") {
-      chip.style.backgroundColor = "lightgreen";
-    }
-    chipContainer.appendChild(chip)
-  })
-
-  for (let i = 0; i < chipContainer.children.length; i++) {
-    chipContainer.children[i].addEventListener("click", function() {
-      // 2 states: 1. active 2. inactive
-      // if active, don't do anything
-      // if inactive, set to active, set previous active to inactive
-      if (chipContainer.children[i].style.backgroundColor !== "lightgreen") {
-        // set previous active to inactive
-        chipContainer.children[active].style.backgroundColor = "white";
-        // set current to active
-        chipContainer.children[i].style.backgroundColor = "lightgreen";
-        categoryEl.value = categoryIds[i];
-        active = i;
-      }
-    })
-  }
-
-  const funny = ["Toasty McButterpants", "Pickles Von Crunch", "Waffleton Sizzlebottom", "Nacho Cheeseholic", "Olive Q. Martini", "Jellybean Snickerdoodle", "Cornelius Popcornicus", "Pancake Fluffington", "Fluffy McSnoutface", "Bark Twain", "Meow Zedong", "Snappy Turtlepants", "Pawsitively Clawrence", "Quackers McDuckface", "Wiggly Wigglesworth", "Hootie Featherbottom", "Sprinkle Stardustington", "Glorbnax the Wobbly", "Zany Moonwhisker", "Bloop Fizzlewink", "Twinkle McFroggle", "Professor Quirkadoo", "Sir Bananington III", "Lady Zoodleflop", "Bytey McGiggles", "Wi-Fido Snarkington", "Clickety Clackerson", "Captain Debuggeroo", "Cache Memorykins", "Pixel Doodlebug", "Glitchy Von Zap", "Algo Rhythmicus", "Soggy Pants McGee", "Doodle McSquiggleface", "Bloopity Blorpington", "Chauncey Wobblebottom", "Snorkel Dingledoodle", "Lumpy Sporklebean", "Fizzlebop Zanytoes", "Wobblewoo Noodlebrain"]
-  const username = document.getElementById("username")
-  username.value = funny[Math.floor(Math.random() * funny.length)]
-
-  localStorage.setItem("domain_username", username.value)
-  username.addEventListener("input", () => {
-    if (username.value === "") {
-      username.value = funny[Math.floor(Math.random() * funny.length)]
-    }
-    localStorage.setItem("domain_username", username.value)
-  })
-</script>
+<script src="{{ url_for('static', filename='scripts/create.js') }}"></script>
 {% endblock %}
 
