@@ -35,10 +35,10 @@ def index():
         username = request.form.get('username')
         category = request.form.get('category')
         difficulty = request.form.get('difficulty')
-        print(request.form)
+        timer = int(request.form.get('timer'))
         game_id = str(uuid.uuid4())
         trivia_data = {"questions": [], "answers": [], "correct_answers": []}
-        while (code := Kodak().fetch_questions(num_questions, category, difficulty, trivia_data, game_id, username, get_db())) != 0:
+        while (code := Kodak().fetch_questions(num_questions, category, difficulty, timer, trivia_data, game_id, username, get_db())) != 0:
             if (code == 5):
                 print('Hit rate limit, fetching questions again in 5 seconds')
                 time.sleep(5)
@@ -49,33 +49,33 @@ def index():
 
 @app.route('/game/<game_id>')
 def room(game_id):
-    game:Game = Game(game_id, [], [], [], 0, get_db()).get_game()
+    game:Game = Game(game_id, [], [], [], 0, 60, get_db()).get_game()
     if (game.curr_question >= len(game.questions)):
         return redirect(f'/game/{game_id}/results')
     return render_template('game.html', game_id=game_id)
 
 @app.route('/game/<game_id>/get_question', methods=['POST'])
 def get_question(game_id):
-    game:Game = Game(game_id, [], [], [], 0, get_db()).get_game()
+    game:Game = Game(game_id, [], [], [], 0, 60, get_db()).get_game()
     return jsonify({"question": game.questions[game.curr_question], "answers": game.answers[game.curr_question], "curr_question": game.curr_question}), 200
 
 @app.route('/game/<game_id>/check', methods=['POST'])
 def check_answer(game_id):
-    game:Game = Game(game_id, [], [], [], 0, get_db()).get_game()
+    game:Game = Game(game_id, [], [], [], 0, 60, get_db()).get_game()
     username = request.json.get('username')
     curr_time = request.json.get('curr_time')
     answer = request.json.get('answer')
     player:Player = Player(game_id, username, 0, get_db()).get_player(username, game_id)
     if game.check_answer(answer):
-        player.update_score(60, curr_time, True)
+        player.update_score(game.timer, curr_time, True)
         return jsonify({"correct": True, "your_answer": answer, "correct_answer": game.correct_answers[game.curr_question]}), 200
     else:
-        player.update_score(60, curr_time, False)
+        player.update_score(game.timer, curr_time, False)
         return jsonify({"correct": False, "your_answer": answer, "correct_answer": game.correct_answers[game.curr_question]}), 200
     
 @app.route('/game/<game_id>/next', methods=['POST'])
 def next_question(game_id):
-    game:Game = Game(game_id, [], [], [], 0, get_db()).get_game()
+    game:Game = Game(game_id, [], [], [], 0, 60, get_db()).get_game()
     game.next_question()
     if (game.curr_question >= len(game.questions)):
         return jsonify({"ok": True, "game_over": True}), 200

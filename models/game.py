@@ -2,12 +2,13 @@ from typing import List
 import json
 
 class Game:
-    def __init__(self, game_id:str, questions:List[str], answers:List[str], correct_answers:List[str], curr_question:int, db_connection):
+    def __init__(self, game_id:str, questions:List[str], answers:List[str], correct_answers:List[str], curr_question:int, timer:int, db_connection):
         self.game_id = game_id
         self.questions = questions
         self.answers = answers
         self.correct_answers = correct_answers
         self.curr_question = curr_question
+        self.timer = timer
         self.db_connection = db_connection
         self.db_cursor = self.db_connection.cursor()
         self.init_game_table()
@@ -20,7 +21,8 @@ class Game:
                     questions TEXT,
                     answers TEXT,
                     correct_answers TEXT,
-                    curr_question INTEGER DEFAULT 0
+                    curr_question INTEGER DEFAULT 0,
+                    timer INTEGER DEFAULT 60
                 );
             """)
         except Exception as e:
@@ -30,9 +32,9 @@ class Game:
     def create_game(self):
         try:
             self.db_cursor.execute("""
-                INSERT INTO games (game_id, questions, answers, correct_answers, curr_question)
-                VALUES (?, ?, ?, ?, ?)
-            """, (self.game_id, json.dumps(self.questions), json.dumps(self.answers), json.dumps(self.correct_answers), self.curr_question))
+                INSERT INTO games (game_id, questions, answers, correct_answers, curr_question, timer)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (self.game_id, json.dumps(self.questions), json.dumps(self.answers), json.dumps(self.correct_answers), self.curr_question, self.timer))
             self.db_connection.commit()
         except Exception as e:
             print(e)
@@ -49,6 +51,7 @@ class Game:
                 self.answers = json.loads(game[2])
                 self.correct_answers = json.loads(game[3])
                 self.curr_question = game[4]
+                self.timer = game[5]
             return self
         except Exception as e:
             print(e)
