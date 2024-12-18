@@ -49,6 +49,21 @@ for (let i = 0; i < difficultyContainer.children.length; i++) {
   })
 }
 
+const gamemodeContainer = document.getElementById("gamemode-container")
+const gamemodeEl = document.getElementById("gamemode");
+let gamemodeActive = 0;
+
+for (let i = 0; i < gamemodeContainer.children.length; i++) {
+  gamemodeContainer.children[i].addEventListener("click", function() {
+      if (gamemodeContainer.children[i].style.backgroundColor !== "lightgreen") {
+          gamemodeContainer.children[gamemodeActive].style.backgroundColor = "white";
+          gamemodeContainer.children[i].style.backgroundColor = "lightgreen";
+          gamemodeEl.value = gamemodeContainer.children[i].textContent.toLowerCase()
+          gamemodeActive = i;
+      }
+})
+}
+
 const funny = ["Toasty McButterpants", "Pickles Von Crunch", "Waffleton Sizzlebottom", "Nacho Cheeseholic", "Olive Q. Martini", "Jellybean Snickerdoodle", "Cornelius Popcornicus", "Pancake Fluffington", "Fluffy McSnoutface", "Bark Twain", "Meow Zedong", "Snappy Turtlepants", "Pawsitively Clawrence", "Quackers McDuckface", "Wiggly Wigglesworth", "Hootie Featherbottom", "Sprinkle Stardustington", "Glorbnax the Wobbly", "Zany Moonwhisker", "Bloop Fizzlewink", "Twinkle McFroggle", "Professor Quirkadoo", "Sir Bananington III", "Lady Zoodleflop", "Bytey McGiggles", "Wi-Fido Snarkington", "Clickety Clackerson", "Captain Debuggeroo", "Cache Memorykins", "Pixel Doodlebug", "Glitchy Von Zap", "Algo Rhythmicus", "Soggy Pants McGee", "Doodle McSquiggleface", "Bloopity Blorpington", "Chauncey Wobblebottom", "Snorkel Dingledoodle", "Lumpy Sporklebean", "Fizzlebop Zanytoes", "Wobblewoo Noodlebrain"]
 const username = document.getElementById("username")
 username.value = funny[Math.floor(Math.random() * funny.length)]

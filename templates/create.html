@@ -18,13 +18,12 @@
 
 {% block nav %}
 <nav>
-  <h1>DOMAIN</h1>
+  <h1>Create Your Game</h1>
 </nav>
 {% endblock %}
 
 {% block content %}
 <form action="/" method="post">
-  <h2>Create Your Game</h2>
   <div class="input-wrapper">
     <label for="username">Your Username</label>
     <input
@@ -35,6 +34,14 @@
       name="username"
       required
     />
+  </div>
+  <div class="input-wrapper">
+    <label for="gamemode">Game Mode</label>
+    <div id="gamemode-container" class="chip-container">
+      <p style="background-color: lightgreen" class="chip neobrutalist">PvE</p>
+      <p class="chip neobrutalist">PvP</p>
+    </div>
+    <input style="display: none" id="gamemode" type="text" value="pve" name="gamemode">
   </div>
   <div class="input-wrapper">
     <label for="questions">Number of Questions</label>
