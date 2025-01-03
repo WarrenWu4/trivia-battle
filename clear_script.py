@@ -26,5 +26,18 @@ def get_all_games():
     except:
         print('error occurred getting all games')
 
+def get_all_players():
+    try:
+        db = sqlite3.connect(database)
+        cursor = db.cursor()
+        cursor.execute('SELECT * FROM players')
+        players = cursor.fetchall()
+        db.close()
+        for player in players:
+            print(player[3])
+    except:
+        print('error occurred getting all players')
+
+get_all_players()
 # get_all_games()
-clear_game_table()
+# clear_game_table()

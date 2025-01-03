@@ -53,10 +53,9 @@ class Player:
             print(e)
             raise Exception("Error getting player")
     
-    def update_score(self, max_time:int, curr_time:int, correct:bool) -> None:
+    def update_score(self, correct:bool) -> None:
         try:
-            self.score = self.calc_weight_score(max_time, curr_time, correct)
-            print(self.score, correct)
+            self.score = self.score+10 if correct else max(0, self.score-10)
             self.db_cursor.execute("""
                 UPDATE players SET score = ? WHERE username =
                     (SELECT username FROM players WHERE game_id = ? LIMIT 1)
@@ -65,12 +64,3 @@ class Player:
         except Exception as e:
             print(e)
             raise Exception("Error updating score")
-    
-    def calc_weight_score(self, max_time:int, curr_time:int, correct:bool) -> int:
-        """
-        helper function to calculate the weighted score for the user
-        """
-        if (correct):
-            return int(self.score + (10) * (curr_time / max_time))
-        else:
-            return max(0, int(self.score - (10)*(curr_time / max_time)))

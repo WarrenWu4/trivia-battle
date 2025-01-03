@@ -25,7 +25,16 @@
 {% block content %}
 <div class="content">
     <div class="neobrutalist over-container">
-        <h2>You scored: 10 out of 10</h2>
+        <div class="player-header">
+            <h3>Player</h3>
+            <p>Score</p>
+        </div>
+        {% for player in players_data %}
+            <div class="player">
+                <h3>{{ player[0] }}</h3>
+                <p>{{ player[1] }}</p>
+            </div>
+        {% endfor %}
         <a class="default-btn" href="/">
             PLAY AGAIN
             <img 

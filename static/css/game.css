@@ -74,3 +74,26 @@
     align-items: center;
     row-gap: 1.6rem;
 }
+
+.player {
+    width: 100%;
+    display: flex;
+    column-gap: 0.8rem;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.5rem;
+}
+
+.player-header {
+    width: 100%;
+    display: flex;
+    column-gap: 0.8rem;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.player h3 {
+    font-weight: 500;
+}

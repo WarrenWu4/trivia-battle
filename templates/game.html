@@ -49,7 +49,7 @@
     const game_id = "{{ game_id }}"
     const username = localStorage.getItem("domain_username");
     let curr_question = 1;
-    let timer = localStorage.getItem("domain_timer") || 61;
+    let timer = parseInt("{{ timer }}") || 61;
 
     const questionEl = document.getElementById("question");
     const answersEl = document.getElementById("answers");
@@ -140,7 +140,6 @@
             }
         });
         const scoreData = await score.json();
-        console.log(scoreData);
         scoreEl.textContent = `${scoreData.score} pts`;
     }
 

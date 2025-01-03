@@ -5,8 +5,6 @@ from models.player import Player
 from models.kodak import Kodak
 import uuid
 import sqlite3
-import random
-import requests
 import time
 
 app = Flask(__name__)
@@ -36,50 +34,64 @@ def index():
         category = request.form.get('category')
         difficulty = request.form.get('difficulty')
         timer = int(request.form.get('timer'))
+        gamemode = request.form.get('gamemode')
+        ready = (gamemode == 'solo')
+        
         game_id = str(uuid.uuid4())
         trivia_data = {"questions": [], "answers": [], "correct_answers": []}
-        while (code := Kodak().fetch_questions(num_questions, category, difficulty, timer, trivia_data, game_id, username, get_db())) != 0:
+        while (code := Kodak().fetch_questions(num_questions, category, difficulty, timer, trivia_data, game_id, username, ready, get_db())) != 0:
             if (code == 5):
                 print('Hit rate limit, fetching questions again in 5 seconds')
                 time.sleep(5)
             else:
+                print('Error fetching questions:', code)
                 return redirect('/error?msg=Error creating game')
+        if (not ready):
+            return redirect(f"/waiting_room/{game_id}")
         return redirect(f"/game/{game_id}")
     return render_template('create.html')
 
+@app.route('/waiting_room/<game_id>')
+def waiting_room(game_id):
+    return render_template('share.html', game_id=game_id)
+
 @app.route('/game/<game_id>')
 def room(game_id):
-    game:Game = Game(game_id, [], [], [], 0, 60, get_db()).get_game()
+    game:Game = Game(game_id, [], [], [], 0, 60, False, get_db()).get_game()
+    if (not game.ready):
+        return redirect(f'/waiting_room/{game_id}')
     if (game.curr_question >= len(game.questions)):
         return redirect(f'/game/{game_id}/results')
-    return render_template('game.html', game_id=game_id)
+    return render_template('game.html', game_id=game_id, timer=game.timer)
 
 @app.route('/game/<game_id>/get_question', methods=['POST'])
 def get_question(game_id):
-    game:Game = Game(game_id, [], [], [], 0, 60, get_db()).get_game()
+    game:Game = Game(game_id, [], [], [], 0, 60, False, get_db()).get_game()
     return jsonify({"question": game.questions[game.curr_question], "answers": game.answers[game.curr_question], "curr_question": game.curr_question}), 200
 
 @app.route('/game/<game_id>/check', methods=['POST'])
 def check_answer(game_id):
-    game:Game = Game(game_id, [], [], [], 0, 60, get_db()).get_game()
+    game:Game = Game(game_id, [], [], [], 0, 60, False, get_db()).get_game()
     username = request.json.get('username')
-    curr_time = request.json.get('curr_time')
     answer = request.json.get('answer')
     player:Player = Player(game_id, username, 0, get_db()).get_player(username, game_id)
-    if game.check_answer(answer):
-        player.update_score(game.timer, curr_time, True)
-        return jsonify({"correct": True, "your_answer": answer, "correct_answer": game.correct_answers[game.curr_question]}), 200
-    else:
-        player.update_score(game.timer, curr_time, False)
-        return jsonify({"correct": False, "your_answer": answer, "correct_answer": game.correct_answers[game.curr_question]}), 200
+    correct = game.check_answer(answer)
+    player.update_score(correct)
+    return jsonify({"correct": correct, "your_answer": answer, "correct_answer": game.correct_answers[game.curr_question]}), 200
     
 @app.route('/game/<game_id>/next', methods=['POST'])
 def next_question(game_id):
-    game:Game = Game(game_id, [], [], [], 0, 60, get_db()).get_game()
+    game:Game = Game(game_id, [], [], [], 0, 60, False, get_db()).get_game()
     game.next_question()
     if (game.curr_question >= len(game.questions)):
         return jsonify({"ok": True, "game_over": True}), 200
     return jsonify({"ok": True, "game_over": False}), 200
+
+@app.route('/game/<game_id>/start', methods=['POST'])
+def start_game(game_id):
+    game:Game = Game(game_id, [], [], [], 0, 60, False, get_db()).get_game()
+    game.start_game()
+    return jsonify({"ok": True}), 200
 
 @app.route('/player/<username>/<game_id>')
 def get_player(username, game_id):
@@ -88,7 +100,24 @@ def get_player(username, game_id):
 
 @app.route('/game/<game_id>/results')
 def results(game_id):
-    return render_template('game_over.html')
+    game:Game = Game(game_id, [], [], [], 0, 60, False, get_db()).get_game()
+    players_data = game.get_players()
+    return render_template('game_over.html', players_data=players_data)
+
+@app.route('/game/<game_id>/check-player', methods=['POST'])
+def check_player(game_id):
+    username = request.json.get('username')
+    if (len(username) <= 0):
+        return jsonify({"ok": True, "exists": False}), 200
+    players = Game(game_id, [], [], [], 0, 60, False, get_db()).get_players()
+    usernames = [player[0] for player in players]
+    return jsonify({"ok": True, 'exists': True if (username in usernames) else False}), 200
+
+@app.route('/game/<game_id>/add-player', methods=['POST'])
+def add_player(game_id):
+    username = request.json.get('username')
+    Game(game_id, [], [], [], 0, 60, False, get_db()).add_player(username)
+    return jsonify({"ok": True}), 200
 
 @app.route('/error')
 def error():
