@@ -1,25 +1,55 @@
-from models.game import Game
-from models.player import Player
 import requests
 import random
+import time
 
 class Kodak:
     def __init__(self):
         pass
 
-    def fetch_questions(self, num_questions, category, difficulty, timer, trivia_data, game_id, username, ready, db):
+    def get_player(self, gameId, username, db_connection):
+        db_cursor = db_connection.cursor()
+        try:
+            db_cursor.execute("""
+                SELECT * FROM players WHERE username = ? AND gameId = ?
+            """, (username, gameId))
+            player = db_cursor.fetchone()
+            if player:
+                return dict(player)
+        except Exception as e:
+            print(e)
+            return {}
+
+    def get_game(self, gameId, db_connection):
+        db_cursor = db_connection.cursor()
+        try:
+            db_cursor.execute("""
+                SELECT * FROM games WHERE gameId = ?
+            """, (gameId,))
+            game = db_cursor.fetchone()
+            if game:
+                return dict(game)
+        except Exception as e:
+            print(e)
+            return {}
+
+    def fetch_questions(self, num_questions, category, difficulty):
+        difficulty = difficulty.lower()
         url = f'https://opentdb.com/api.php?amount={num_questions}&category={category}&difficulty={difficulty}&type=multiple&encode=base64'
         response = requests.get(url)
         code = response.json().get('response_code')
+        while (code == 5):
+            time.sleep(5)
+            response = requests.get(url)
+            code = response.json().get('response_code')
+        print(code)
         if code != 0:
-            return code
+            return [], [], [], code
         data = response.json().get('results')
+        questions, answers, correct_answers = [], [], []
         for entry in data:
             all_answers = entry.get('incorrect_answers') + [entry.get('correct_answer')]
             random.shuffle(all_answers)
-            trivia_data["questions"].append(entry.get('question'))
-            trivia_data["answers"].append(all_answers)
-            trivia_data["correct_answers"].append(entry.get('correct_answer'))
-        Game(game_id, trivia_data.get('questions'), trivia_data.get('answers'), trivia_data.get('correct_answers'), 0, timer, ready, db).create_game()
-        Player(game_id, username, 0, db).create_player()
-        return code
+            questions.append(entry.get('question'))
+            answers.append(all_answers)
+            correct_answers.append(entry.get('correct_answer'))
+        return questions, answers, correct_answers, code

@@ -1,8 +1,11 @@
 class Player:
-    def __init__(self, game_id:str, username:str, score:int, db_connection) -> None:
-        self.game_id = game_id
+    def __init__(self, gameId:str, username:str, currentQuestion:int, score:int, correct:int, db_connection) -> None:
+        self.gameId = gameId
         self.username = username
+        self.currentQuestion = currentQuestion
         self.score = score
+        self.correct = correct
+
         self.db_connection = db_connection
         self.db_cursor = self.db_connection.cursor()
         self.init_player_table()
@@ -14,9 +17,11 @@ class Player:
                 CREATE TABLE IF NOT EXISTS players (
                     uuid INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT,
+                    currentQuestion INTEGER DEFAULT 0,
                     score INTEGER DEFAULT 0,
-                    game_id TEXT NOT NULL,
-                    FOREIGN KEY (game_id) REFERENCES games(game_id)
+                    correct INTEGER DEFAULT 0,
+                    gameId TEXT NOT NULL,
+                    FOREIGN KEY (gameId) REFERENCES games(gameId)
                         ON DELETE CASCADE
                         ON UPDATE CASCADE
                 );
@@ -28,30 +33,14 @@ class Player:
     def create_player(self) -> None:
         try:
             self.db_cursor.execute("""
-                INSERT INTO players (username, score, game_id)
-                VALUES (?, ?, ?)
-            """, (self.username, self.score, self.game_id))
+                INSERT INTO players (username, currentQuestion, score, correct, gameId)
+                VALUES (?, ?, ?, ?, ?)
+            """, (self.username, self.currentQuestion, self.score, self.correct, self.gameId))
             self.db_connection.commit()
         except Exception as e:
             print(e)
             raise Exception("Error creating player")
     
-    def get_player(self, username, game_id):
-        try:
-            self.db_cursor.execute("""
-                SELECT * FROM players WHERE username = ? AND game_id = ?
-            """, (username, game_id))
-            player = self.db_cursor.fetchone()
-            if player:
-                self.username = player[1]
-                self.score = player[2]
-                self.game_id = player[3]
-                return self
-            else:
-                raise Exception("Player not found")
-        except Exception as e:
-            print(e)
-            raise Exception("Error getting player")
     
     def update_score(self, correct:bool) -> None:
         try:

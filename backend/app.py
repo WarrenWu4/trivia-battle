@@ -1,13 +1,13 @@
 from flask import Flask, redirect, render_template, request, g, jsonify
 from flask_socketio import SocketIO
+from flask_cors import CORS
 from models.game import Game
 from models.player import Player
 from models.kodak import Kodak
-import uuid
 import sqlite3
-import time
 
 app = Flask(__name__)
+CORS(app, origins=["http://127.0.0.1:5173", "http://localhost:5173"])
 socketio = SocketIO(app)
 DATABASE = 'database.db'
 
@@ -26,103 +26,51 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/api/create', methods=['POST'])
 def index():
-    if (request.method == 'POST'):
-        num_questions = int(request.form.get('questions'))
-        username = request.form.get('username')
-        category = request.form.get('category')
-        difficulty = request.form.get('difficulty')
-        timer = int(request.form.get('timer'))
-        gamemode = request.form.get('gamemode')
-        ready = (gamemode == 'solo')
-        
-        game_id = str(uuid.uuid4())
-        trivia_data = {"questions": [], "answers": [], "correct_answers": []}
-        while (code := Kodak().fetch_questions(num_questions, category, difficulty, timer, trivia_data, game_id, username, ready, get_db())) != 0:
-            if (code == 5):
-                print('Hit rate limit, fetching questions again in 5 seconds')
-                time.sleep(5)
-            else:
-                print('Error fetching questions:', code)
-                return redirect('/error?msg=Error creating game')
-        if (not ready):
-            return redirect(f"/waiting_room/{game_id}")
-        return redirect(f"/game/{game_id}")
-    return render_template('create.html')
+    if not request.json:
+        return jsonify({"success": False}), 500
 
-@app.route('/waiting_room/<game_id>')
-def waiting_room(game_id):
-    return render_template('share.html', game_id=game_id)
+    gameId = request.json.get("gameId")
+    username = request.json.get("username")
+    gameMode = request.json.get("gameMode")
+    playerNum = request.json.get("playerNum")
+    questionNum = request.json.get("questionNum")
+    questionTimer = request.json.get("questionTimer")
+    category = request.json.get("category")
+    difficulty = request.json.get("difficulty")
 
-@app.route('/game/<game_id>')
-def room(game_id):
-    game:Game = Game(game_id, [], [], [], 0, 60, False, get_db()).get_game()
-    if (not game.ready):
-        return redirect(f'/waiting_room/{game_id}')
-    if (game.curr_question >= len(game.questions)):
-        return redirect(f'/game/{game_id}/results')
-    return render_template('game.html', game_id=game_id, timer=game.timer)
+    q, a, ca, code = Kodak().fetch_questions(questionNum, category, difficulty)
+    if (code != 0):
+        return jsonify({"success": False}), 500
+    Game(gameId, gameMode, playerNum, questionNum, questionTimer, category, difficulty, q, a, ca, get_db()).create_game()
+    Player(gameId, username, 0, 0, 0, get_db()).create_player()
+    return jsonify({"success": True}), 200
 
-@app.route('/game/<game_id>/get_question', methods=['POST'])
-def get_question(game_id):
-    game:Game = Game(game_id, [], [], [], 0, 60, False, get_db()).get_game()
-    return jsonify({"question": game.questions[game.curr_question], "answers": game.answers[game.curr_question], "curr_question": game.curr_question}), 200
+@app.route('/api/game', methods=['POST'])
+def game():
+    if not request.json:
+        return jsonify({"success": False}), 500
+    gameId = request.json.get("gameId")
+    gameData = Kodak().get_game(gameId, get_db())
+    if gameData:
+        gameData["success"] = True
+        return jsonify(gameData), 200
+    return jsonify({"success": False}), 404
 
-@app.route('/game/<game_id>/check', methods=['POST'])
-def check_answer(game_id):
-    game:Game = Game(game_id, [], [], [], 0, 60, False, get_db()).get_game()
-    username = request.json.get('username')
-    answer = request.json.get('answer')
-    player:Player = Player(game_id, username, 0, get_db()).get_player(username, game_id)
-    correct = game.check_answer(answer)
-    player.update_score(correct)
-    return jsonify({"correct": correct, "your_answer": answer, "correct_answer": game.correct_answers[game.curr_question]}), 200
-    
-@app.route('/game/<game_id>/next', methods=['POST'])
-def next_question(game_id):
-    game:Game = Game(game_id, [], [], [], 0, 60, False, get_db()).get_game()
-    game.next_question()
-    if (game.curr_question >= len(game.questions)):
-        return jsonify({"ok": True, "game_over": True}), 200
-    return jsonify({"ok": True, "game_over": False}), 200
-
-@app.route('/game/<game_id>/start', methods=['POST'])
-def start_game(game_id):
-    game:Game = Game(game_id, [], [], [], 0, 60, False, get_db()).get_game()
-    game.start_game()
-    return jsonify({"ok": True}), 200
-
-@app.route('/player/<username>/<game_id>')
-def get_player(username, game_id):
-    player:Player = Player(game_id, username, 0, get_db()).get_player(username, game_id)
-    return jsonify({"score": player.score}), 200
-
-@app.route('/game/<game_id>/results')
-def results(game_id):
-    game:Game = Game(game_id, [], [], [], 0, 60, False, get_db()).get_game()
-    players_data = game.get_players()
-    return render_template('game_over.html', players_data=players_data)
-
-@app.route('/game/<game_id>/check-player', methods=['POST'])
-def check_player(game_id):
-    username = request.json.get('username')
-    if (len(username) <= 0):
-        return jsonify({"ok": True, "exists": False}), 200
-    players = Game(game_id, [], [], [], 0, 60, False, get_db()).get_players()
-    usernames = [player[0] for player in players]
-    return jsonify({"ok": True, 'exists': True if (username in usernames) else False}), 200
-
-@app.route('/game/<game_id>/add-player', methods=['POST'])
-def add_player(game_id):
-    username = request.json.get('username')
-    Game(game_id, [], [], [], 0, 60, False, get_db()).add_player(username)
-    return jsonify({"ok": True}), 200
-
-@app.route('/error')
-def error():
-    msg = request.args.get('msg')
-    return render_template('error.html', msg=msg)
+@app.route('/api/player', methods=['POST'])
+def player():
+    if not request.json:
+        return jsonify({"success": False}), 500
+    gameId = request.json.get("gameId")
+    username = request.json.get("username")
+    playerData = Kodak().get_player(gameId, username, get_db())
+    if playerData:
+        if len(playerData.keys()) > 0:
+            playerData["success"] = True
+            return jsonify(playerData), 200
+        return jsonify({"success": False}), 404
+    return jsonify({"success": False}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

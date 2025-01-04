@@ -25,15 +25,50 @@ export default function Game() {
 
     async function validatePlayer() {
         const player = localStorage.getItem(`domain-player-${gameId}`);
+        if (!player) {
+            setPlayerData((prev) => ({
+                ...prev,
+                username: "",
+            }));
+            return false;
+        }
         // check that player is in game database
-        // if not reset username and prompt username
-        setPlayerData((prev) => ({
-            ...prev,
-            username: "player",
-        }));
+        const response = await fetch("http://localhost:5000/api/player", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ gameId: gameId, username: player }),
+        });
+        const data = await response.json();
+        console.log(data);
+        if (data.success) {
+            setPlayerData((prev) => ({
+                ...prev,
+                username: player,
+            }));
+            return true;
+        } else {
+            // if not reset username and prompt username
+            setPlayerData((prev) => ({
+                ...prev,
+                username: "",
+            }));
+            return false;
+        }
     }
 
     async function getQuestion() {
+        const response = await fetch("http://localhost:5000/api/game", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ gameId }),
+        })
+        const data = await response.json();
+        if (data.success) {
+        }
         setQuestion((_) => "test");
         setAnswers((_) => ["test1", "test2", "test3", "test4"]);
     }

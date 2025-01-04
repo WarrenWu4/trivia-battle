@@ -6,8 +6,10 @@ import names from "../assets/data/names.json";
 
 export default function Create() {
     const [formData, setFormData] = useState({
+        gameId: crypto.randomUUID().toString(),
         username: names[Math.floor(Math.random() * names.length)],
         gameMode: "FFA",
+        playerNum: 1,
         questionNum: 10,
         questionTimer: 60,
         category: "9",
@@ -31,7 +33,7 @@ export default function Create() {
         }));
     }
 
-    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         /**
          * ! validate data
@@ -61,12 +63,36 @@ export default function Create() {
             alert("Invalid difficulty");
             return;
         }
-        const gameId = crypto.randomUUID().toString();
-        window.location.href = `/game/${gameId}`;
+        /**
+         * send data to backend
+         * upon success:
+         *  store username in local storage
+         *  redirect to game page
+         */
+        const response = await fetch("http://localhost:5000/api/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+        });
+        const data = await response.json();
+        if (data.success) {
+            localStorage.setItem(`domain-player-${formData.gameId}`, formData.username);
+            window.location.href = `/game/${formData.gameId}`;
+        } else {
+            alert("Failed to create game");
+        }
     }
 
     return (
         <MainLayout>
+
+            <nav className="flex items-center justify-between pb-2 border-b-4 border-black mb-4">
+                <a href="/" className="text-lg font-bold">
+                    CREATE GAME
+                </a>
+            </nav>
             
             <form 
                 className="w-full flex flex-col gap-y-8" 
@@ -106,6 +132,17 @@ export default function Create() {
                         className="hidden"
                         type="text"
                         defaultValue={formData.gameMode}
+                        required
+                    />
+                </div>
+                <div className={inputWrapperClass}>
+                    <label>Number of Players</label>
+                    <input
+                        className="retro px-4 py-2 outline-none"
+                        type="number"
+                        name="playerNum"
+                        value={formData.playerNum}
+                        onChange={handleChange}
                         required
                     />
                 </div>
