@@ -1,7 +1,7 @@
-import { useParams } from "react-router-dom";
-import MainLayout from "../layouts/MainLayout";
-import { useEffect, useState } from "react";
-import names from "../assets/data/names.json";
+import { redirect, useParams } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+import { base64Decoder, base64Encoder } from "../lib/base64Functions";
+import { UserContext } from "../layouts/AuthLayout";
 
 interface PlayerData {
     username: string | null;
@@ -16,75 +16,61 @@ export default function Game() {
     const [question, setQuestion] = useState<string>("");
     const [answers, setAnswers] = useState<string[]>([]);
     const [timer, setTimer] = useState<number>(60);
-    const [playerData, setPlayerData] = useState<PlayerData>({
-        username: null,
-        currentQuestion: 0,
-        score: 0,
-        correct: 0,
-    })
 
-    async function validatePlayer() {
-        const player = localStorage.getItem(`domain-player-${gameId}`);
-        if (!player) {
-            setPlayerData((prev) => ({
-                ...prev,
-                username: "",
-            }));
-            return false;
-        }
-        // check that player is in game database
-        const response = await fetch("http://localhost:5000/api/player", {
-            method: "POST",
+    const [playerData, setPlayerData] = useState<PlayerData | null>(null)
+    const user = useContext(UserContext);
+
+    async function getQuestion(questionNumber: number) {
+        const response = await fetch(`http://localhost:5000/game/${gameId}/question/${questionNumber}`, {
+            method: "GET",
             headers: {
                 "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ gameId: gameId, username: player }),
-        });
-        const data = await response.json();
-        console.log(data);
-        if (data.success) {
-            setPlayerData((prev) => ({
-                ...prev,
-                username: player,
-            }));
-            return true;
-        } else {
-            // if not reset username and prompt username
-            setPlayerData((prev) => ({
-                ...prev,
-                username: "",
-            }));
-            return false;
-        }
-    }
-
-    async function getQuestion() {
-        const response = await fetch("http://localhost:5000/api/game", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ gameId }),
+            }
         })
         const data = await response.json();
-        if (data.success) {
+        if (!data.success) {
+            redirect(`/error`);
+            return
         }
-        setQuestion((_) => "test");
-        setAnswers((_) => ["test1", "test2", "test3", "test4"]);
+        setQuestion(base64Decoder(data.trivia.question));
+        setAnswers(data.trivia.answers.map((answers: string) => base64Decoder(answers)));
     }
+    
+    async function checkAnswer(e: React.MouseEvent<HTMLButtonElement>, currentQuestion: number, answer: string) {
+        e.preventDefault();
+        const response = await fetch(`http://localhost:5000/game/${gameId}/question/${currentQuestion}/check`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({answer: base64Encoder(answer)})
+        })
+        const data = await response.json();
+        if (!data.success) {
+            redirect(`/error`);
+            return
+        }
+        if (data.correct) {
+            console.log("correct answer");
+        } else {
+            console.log("incorrect answer");
+        }
+    } 
 
     useEffect(() => {
-        validatePlayer();
-        getQuestion();
+        if (user !== null) {
+            setPlayerData(user);
+            getQuestion(user.currentQuestion);
+        } else {
+            redirect(`/join/${gameId}`);
+        }
     }, [])
 
     return (
-        <MainLayout>
+        <>
             
-            {playerData.username === null ?
+            {playerData === null ?
             <></>
-            : playerData.username === "" ?
-            <UsernameForm />
             :      
             <TriviaDisplay
                 question={question}
@@ -92,10 +78,11 @@ export default function Game() {
                 currentQuestion={playerData.currentQuestion}
                 score={playerData.score}
                 timer={timer}
+                handleAnswerCheck={checkAnswer}
             />
             }
 
-        </MainLayout>
+        </>
     )
 }
 
@@ -105,9 +92,10 @@ interface TriviaDisplayProps {
     currentQuestion: number;
     score: number;
     timer: number;
+    handleAnswerCheck: (e: React.MouseEvent<HTMLButtonElement>, currentQuestion: number, answer: string) => void;
 }
 
-function TriviaDisplay({ question, answers, currentQuestion, score, timer }: TriviaDisplayProps) {
+function TriviaDisplay({ question, answers, currentQuestion, score, timer, handleAnswerCheck }: TriviaDisplayProps) {
     return (
     <div className="w-full flex flex-col gap-y-8">
         <div className="retro px-4 py-2 flex justify-between items-center">
@@ -119,14 +107,15 @@ function TriviaDisplay({ question, answers, currentQuestion, score, timer }: Tri
             </p>
         </div>
         <div className="retro p-4 flex flex-col items-center gap-y-4">
-            <p className="text-center">
+            <p className="w-full text-center break-words">
                 {question}
             </p>
             <div className="w-full grid grid-cols-2 gap-4">
                 {answers.map((answer: string, index: number) => (
                     <button
                         key={index}
-                        className="text-left w-full px-4 py-2"
+                        onClick={(e) => handleAnswerCheck(e, currentQuestion, answer)}
+                        className="text-left w-full"
                     >
                         {answer}
                     </button>
@@ -139,46 +128,5 @@ function TriviaDisplay({ question, answers, currentQuestion, score, timer }: Tri
             </p>
         </div>
     </div>
-    )
-}
-
-function UsernameForm() {
-
-    const [formData, setFormData] = useState({
-        username: names[Math.floor(Math.random() * names.length)],
-    });
-
-    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    }
-
-    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-    }
-
-    return (
-        <form
-            className="w-full flex flex-col gap-y-8"
-            onSubmit={handleSubmit}
-        >
-            <div className="w-full flex flex-col gap-y-2">
-                <label>Username</label>
-                <input
-                    name="username"
-                    className="retro px-4 py-2 outline-none"
-                    type="text"
-                    value={formData.username}
-                    onChange={handleChange}
-                    required
-                />
-            </div>
-            <button className="px-4 py-2 bg-black text-white" type="submit">
-                ENTER GAME
-            </button>
-        </form>
     )
 }

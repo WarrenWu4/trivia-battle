@@ -1,0 +1,9 @@
+// collection of sqlalchemy scripts/queries
+
+// query all games
+games = db.session.scalars(db.select(Game)).all()
+games
+
+// query for all players
+players = db.session.scalars(db.select(Player)).all()
+players

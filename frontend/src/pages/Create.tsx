@@ -69,19 +69,38 @@ export default function Create() {
          *  store username in local storage
          *  redirect to game page
          */
-        const response = await fetch("http://localhost:5000/api/create", {
+        const resCreateGame = await fetch("http://localhost:5000/game/create", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(formData),
+            body: JSON.stringify({
+                game_id: formData.gameId,
+                gamemode: formData.gameMode,
+                player_num: formData.playerNum,
+                question_num: formData.questionNum,
+                question_timer: formData.questionTimer,
+                category: formData.category,
+                difficulty: formData.difficulty,
+            }),
         });
-        const data = await response.json();
-        if (data.success) {
+        const dataCreateGame = await resCreateGame.json();
+        const resCreatePlayer = await fetch("http://localhost:5000/player/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                game_id: formData.gameId,
+                username: formData.username,
+            }),
+        });
+        const dataCreatePlayer = await resCreatePlayer.json();
+        if (dataCreateGame.success && dataCreatePlayer.success) {
             localStorage.setItem(`domain-player-${formData.gameId}`, formData.username);
             window.location.href = `/game/${formData.gameId}`;
         } else {
-            alert("Failed to create game");
+            alert("Failed to create game and player");
         }
     }
 
