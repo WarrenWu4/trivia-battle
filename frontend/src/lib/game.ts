@@ -70,7 +70,7 @@ export async function getGameData(gameId: string): Promise<GameData | null> {
 }
 
 export async function checkAnswer(gameId: string, currentQuestion: number, answer: string): Promise<boolean | null> {
-    const response = await fetch(`http://localhost:5000/game/${gameId}/question/${currentQuestion}/check`, {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/game/${gameId}/question/${currentQuestion}/check`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
