@@ -8,6 +8,6 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-cors = CORS(app, origins=['https://trivia-battle.vercel.app/'])
+cors = CORS(app, origins=['https://trivia-battles.vercel.app/'])
 
 from app import routes, models
