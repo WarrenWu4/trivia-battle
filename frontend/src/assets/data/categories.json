@@ -1,0 +1,20 @@
+[
+    { "category": "General Knowledge", "id": "9" },
+    { "category": "Books", "id": "10" },
+    { "category": "Films & TV", "id": "11,14" },
+    { "category": "Music", "id": "12" },
+    { "category": "Video Games", "id": "15" },
+    { "category": "Science & Nature", "id": "17" },
+    { "category": "Math", "id": "19" },
+    { "category": "Mythology", "id": "20" },
+    { "category": "Sports", "id": "21" },
+    { "category": "Geography", "id": "22" },
+    { "category": "History", "id": "23" },
+    { "category": "Politics", "id": "24" },
+    { "category": "Art", "id": "25" },
+    { "category": "Celebrities", "id": "26" },
+    { "category": "Animals", "id": "27" },
+    { "category": "Vehicles", "id": "28" },
+    { "category": "Anime & Manga", "id": "31" }
+  ]
+  
