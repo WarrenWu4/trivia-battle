@@ -1,7 +1,7 @@
 import { redirect, useParams } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import { useContext, useEffect, useState } from "react";
-import { getAllPlayersFromGame, getPlayerData, getUsername, PlayerData } from "../lib/player";
+import { getAllPlayersFromGame, PlayerData } from "../lib/player";
 import { GameConfig, getGameConfig } from "../lib/game";
 import { UserContext } from "../layouts/AuthLayout";
 import Navbar from "../components/Navbar";
