@@ -7,3 +7,8 @@ games
 // query for all players
 players = db.session.scalars(db.select(Player)).all()
 players
+
+// remove all entries in game/players
+db.session.query(Game).delete()
+db.session.query(Player).delete()
+db.session.commit()

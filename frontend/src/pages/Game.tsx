@@ -1,87 +1,135 @@
-import { redirect, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
-import { base64Decoder, base64Encoder } from "../lib/base64Functions";
 import { UserContext } from "../layouts/AuthLayout";
-
-interface PlayerData {
-    username: string | null;
-    currentQuestion: number;
-    score: number;
-    correct: number;
-}
+import Navbar from "../components/Navbar";
+import { checkAnswer, GameConfig, GameData, getGameConfig, getGameData } from "../lib/game";
+import { PlayerData, updatePlayerData } from "../lib/player";
 
 export default function Game() {
-
+    const navigate = useNavigate();
     const { gameId } = useParams<{ gameId: string }>();
-    const [question, setQuestion] = useState<string>("");
-    const [answers, setAnswers] = useState<string[]>([]);
-    const [timer, setTimer] = useState<number>(60);
+    const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
+    const [gameData, setGameData] = useState<GameData | null>(null);
+    const [qTime, setQTime] = useState<number | null>(null);
 
-    const [playerData, setPlayerData] = useState<PlayerData | null>(null)
     const user = useContext(UserContext);
+    const [playerData, setPlayerData] = useState<PlayerData | null>(null)
+    const [correct, setCorrect] = useState<boolean | null>(null);
+    const [answerState, setAnswerState] = useState<boolean>(false);
 
-    async function getQuestion(questionNumber: number) {
-        const response = await fetch(`http://localhost:5000/game/${gameId}/question/${questionNumber}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        })
-        const data = await response.json();
-        if (!data.success) {
-            redirect(`/error`);
-            return
-        }
-        setQuestion(base64Decoder(data.trivia.question));
-        setAnswers(data.trivia.answers.map((answers: string) => base64Decoder(answers)));
-    }
-    
-    async function checkAnswer(e: React.MouseEvent<HTMLButtonElement>, currentQuestion: number, answer: string) {
+    async function checkAns(e: React.MouseEvent<HTMLButtonElement>, currentQuestion: number, answer: string) {
         e.preventDefault();
-        const response = await fetch(`http://localhost:5000/game/${gameId}/question/${currentQuestion}/check`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({answer: base64Encoder(answer)})
-        })
-        const data = await response.json();
-        if (!data.success) {
-            redirect(`/error`);
-            return
+        if (gameId === undefined) {
+            navigate("/error"); return;
         }
-        if (data.correct) {
-            console.log("correct answer");
+        const correct: boolean | null = await checkAnswer(gameId, currentQuestion, answer);
+        if (correct !== null) {
+            if (correct) {
+                setPlayerData((prev) => ({
+                    ...prev!,
+                    score: prev!.score + 1,
+                    correct: prev!.correct + 1,
+                }))
+            } else {
+                setPlayerData((prev) => ({
+                    ...prev!,
+                    score: prev!.score - 1,
+                }))
+            }
+            setCorrect(correct);
+            setAnswerState(true);
+            setQTime(5);
         } else {
-            console.log("incorrect answer");
+            navigate('/error'); return;
         }
-    } 
+    }
+
+    async function nextQ() {
+        const res = await updatePlayerData(gameId!, {
+            ...playerData!,
+            currentQuestion: playerData!.currentQuestion + 1,
+        });
+        if (!res) {
+            navigate('/error'); return 0;
+        }
+        if (playerData!.currentQuestion + 1 === gameConfig!.questionNum) {
+            navigate(`/game/${gameId}/over`); return 0;
+        }
+        setPlayerData((prev) => ({
+            ...prev!,
+            currentQuestion: prev!.currentQuestion + 1,
+        }))
+    }
 
     useEffect(() => {
-        if (user !== null) {
-            setPlayerData(user);
-            getQuestion(user.currentQuestion);
-        } else {
-            redirect(`/join/${gameId}`);
+        let timerId: any;
+        if (qTime && qTime > 0) {
+            timerId = setInterval(() => {
+                setQTime((prev) => {
+                    if (prev && prev - 1 == 0) {
+                        clearInterval(timerId);
+                        if (answerState) {
+                            nextQ();
+                            setCorrect(null);
+                            setAnswerState(false);
+                            setQTime(gameConfig!.questionTimer);
+                        } else {
+                            setCorrect(false);
+                            setAnswerState(true);
+                            setQTime(5);
+                        }
+                    }
+                    return prev ? prev - 1 : 0;
+                });
+            }, 1000)
         }
+        return () => {
+            if (timerId) {
+                clearInterval(timerId);
+            }
+        }
+    }, [qTime])
+
+    useEffect(() => {
+        async function fetchData() {
+            if (gameId === undefined) {
+                navigate("/error"); return;
+            }
+            if (user === null) {
+                navigate(`/join/${gameId}`); return;
+            }
+            const gameConfig = await getGameConfig(gameId);
+            const gameData = await getGameData(gameId);
+            if (gameConfig === null || gameData === null) {
+                navigate("/error"); return;
+            }
+            if (user.currentQuestion >= gameConfig.questionNum) {
+                navigate(`/game/${gameId}/over`); return;
+            }
+            setGameConfig(gameConfig);
+            setGameData(gameData);
+            setPlayerData(user);
+            setQTime(gameConfig.questionTimer);
+        }
+        fetchData();
     }, [])
 
     return (
         <>
-            
-            {playerData === null ?
+            <Navbar title="TRIVIA BATTLE"/>
+            {playerData === null || gameData === null || gameConfig === null || qTime === null ?
             <></>
             :      
             <TriviaDisplay
-                question={question}
-                answers={answers}
+                question={gameData.questions[playerData.currentQuestion]}
+                answers={gameData.answers[playerData.currentQuestion]}
                 currentQuestion={playerData.currentQuestion}
                 score={playerData.score}
-                timer={timer}
-                handleAnswerCheck={checkAnswer}
+                timer={qTime}
+                handleAnswerCheck={checkAns}
+                correct={correct}
             />
             }
-
         </>
     )
 }
@@ -93,9 +141,11 @@ interface TriviaDisplayProps {
     score: number;
     timer: number;
     handleAnswerCheck: (e: React.MouseEvent<HTMLButtonElement>, currentQuestion: number, answer: string) => void;
+    correct: boolean | null;
 }
 
-function TriviaDisplay({ question, answers, currentQuestion, score, timer, handleAnswerCheck }: TriviaDisplayProps) {
+function TriviaDisplay({ question, answers, currentQuestion, score, timer, handleAnswerCheck, correct }: TriviaDisplayProps) {
+
     return (
     <div className="w-full flex flex-col gap-y-8">
         <div className="retro px-4 py-2 flex justify-between items-center">
@@ -103,7 +153,7 @@ function TriviaDisplay({ question, answers, currentQuestion, score, timer, handl
                 Q{currentQuestion + 1}
             </p>
             <p>
-                {timer} sec
+                {score} pts 
             </p>
         </div>
         <div className="retro p-4 flex flex-col items-center gap-y-4">
@@ -121,10 +171,17 @@ function TriviaDisplay({ question, answers, currentQuestion, score, timer, handl
                     </button>
                 ))}
             </div>
-        </div>
-        <div className="retro px-4 py-2">
             <p>
-                {score} pts
+                {correct !== null ? correct ? "Correct" : "Incorrect" : ""}
+            </p>
+        </div>
+        <div className="retro px-4 py-2 flex items-center justify-center">
+            <p>
+                {correct === null ?
+                `${timer} sec remaining`
+                :
+                `${timer} sec until next question`
+                }
             </p>
         </div>
     </div>

@@ -3,6 +3,7 @@ import MainLayout from "../layouts/MainLayout";
 import { twMerge } from "tailwind-merge";
 import categories from "../assets/data/categories.json";
 import names from "../assets/data/names.json";
+import Navbar from "../components/Navbar";
 
 export default function Create() {
     const [formData, setFormData] = useState({
@@ -69,7 +70,7 @@ export default function Create() {
          *  store username in local storage
          *  redirect to game page
          */
-        const resCreateGame = await fetch("http://localhost:5000/game/create", {
+        const resCreateGame = await fetch(`${import.meta.env.VITE_BACKEND_URL}/game/create`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -85,7 +86,7 @@ export default function Create() {
             }),
         });
         const dataCreateGame = await resCreateGame.json();
-        const resCreatePlayer = await fetch("http://localhost:5000/player/create", {
+        const resCreatePlayer = await fetch(`${import.meta.env.VITE_BACKEND_URL}/player/create`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -107,12 +108,8 @@ export default function Create() {
     return (
         <MainLayout>
 
-            <nav className="flex items-center justify-between pb-2 border-b-4 border-black mb-4">
-                <a href="/" className="text-lg font-bold">
-                    CREATE GAME
-                </a>
-            </nav>
-            
+            <Navbar title="CREATE GAME" />
+
             <form 
                 className="w-full flex flex-col gap-y-8" 
                 onSubmit={handleSubmit}
@@ -123,7 +120,7 @@ export default function Create() {
                     </label>
                     <input
                         name="username"
-                        className="retro px-4 py-2 outline-none"
+                        className="bg-transparent retro px-4 py-2 outline-none"
                         type="text"
                         value={formData.username}
                         onChange={handleChange}
@@ -140,7 +137,7 @@ export default function Create() {
                                 onClick={(e) => handleClick(e, "gameMode", mode)}
                                 className={twMerge(
                                     "retro px-4 py-2",
-                                    formData.gameMode === mode ? "bg-green-300" : ""
+                                    formData.gameMode === mode ? "bg-green-300 dark:bg-green-600" : ""
                                 )}
                             >
                                 {mode}
@@ -157,7 +154,7 @@ export default function Create() {
                 <div className={inputWrapperClass}>
                     <label>Number of Players</label>
                     <input
-                        className="retro px-4 py-2 outline-none"
+                        className="retro px-4 py-2 outline-none bg-transparent"
                         type="number"
                         name="playerNum"
                         value={formData.playerNum}
@@ -168,7 +165,7 @@ export default function Create() {
                 <div className={inputWrapperClass}>
                     <label>Number of Questions</label>
                     <input
-                        className="retro px-4 py-2 outline-none"
+                        className="retro px-4 py-2 outline-none bg-transparent"
                         type="number"
                         name="questionNum"
                         value={formData.questionNum}
@@ -179,7 +176,7 @@ export default function Create() {
                 <div className={inputWrapperClass}>
                     <label>Timer Per Question</label>
                     <input
-                        className="retro px-4 py-2 outline-none"
+                        className="retro px-4 py-2 outline-none bg-transparent"
                         type="number"
                         name="questionTimer"
                         value={formData.questionTimer}
@@ -197,7 +194,7 @@ export default function Create() {
                                 onClick={(e) => handleClick(e, "category", category.id)}
                                 className={twMerge(
                                     "retro px-4 py-2",
-                                    formData.category === category.id ? "bg-green-300" : ""
+                                    formData.category === category.id ? "bg-green-300 dark:bg-green-600" : ""
                                 )}
                             >
                                 {category.category}
@@ -215,7 +212,7 @@ export default function Create() {
                                 onClick={(e) => handleClick(e, "difficulty", difficulty)}
                                 className={twMerge(
                                     "retro px-4 py-2",
-                                    formData.difficulty === difficulty ? "bg-green-300" : ""
+                                    formData.difficulty === difficulty ? "bg-green-300 dark:bg-green-600" : ""
                                 )}      
                             >
                                 {difficulty}
@@ -224,7 +221,7 @@ export default function Create() {
                     </div>
                 </div>
 
-                <button className="px-4 py-2 bg-black text-white" type="submit">
+                <button className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black" type="submit">
                     CREATE GAME
                 </button>
             </form>
